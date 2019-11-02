@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>CHATROOM</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">  
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+  <div style=" width:1450px; margin:auto;">
+	<h2 style="font-family:FangSong;font-weight:bold;color:rgb(228, 9, 9)">聊天屋</h2>
+
+	<nav class="navbar navbar-default"  style='margin-bottom: 6px;'>
+		<div class="container-fluid">
+		  <div class="navbar-header">
+			<a class="navbar-brand" href="#">Nothing</a>
+		  </div>
+		  <ul class="nav navbar-nav">
+			{% if user.is_authenticated %}
+				<li class="active" onclick="checkForm('sn')" id='bugo1'><a href="{% url 'im:getLogout'  %}"> Hello {{ user.username }} 退出</a></li>
+			{% else %}
+				<li class="a" onclick="checkForm('sn')" id='bugo1'><a href="{% url 'im:signup' %}">注册</a></li>
+				<li class="a" onclick="checkForm('sn')" id='bugo1'><a href="{% url 'login' %}">登录</a></li>
+			{% endif %}
+			
+			
+		  </ul>
+		</div>
+	</nav>
+
+	{% block content %}
+	<!--内容填充-->
+	{% endblock %}
+
+</body>
+</html>

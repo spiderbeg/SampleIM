@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- 未使用 django 自带的表单 -->
+<div style="padding: 5px 5px 5px;">
+    <form action="/im/sendmessage/" method="POST" id="urlform" onsubmit="return checkForm()" class="bs-example bs-example-form" role="form">
+        {% csrf_token %}
+        <div class="input-group">
+            <input maxlength="120" name="groupmessage" type="text" class="form-control" placeholder="消息发送" id='inpu'> 
+            <span class="input-group-btn">
+                <button class="btn btn-default" type="submit" value="Submit" id='bugo'>
+                    Go!
+                </button>
+                <p onclick=""></p>
+            </span>
+        </div>
+    </form>
+</div>
+<div>
+    <p>room</p>
+    {% if gourpmessages %}
+        {% for gm in gourpmessages %}
+            <P>发送者：{{gm.sender}} ：{{gm.message}}时间：{{gm.timeg}}</P>
+        {% endfor %}
+    {% else %}
+        <p>~~~~我要休息一会儿~~~.</p>
+    {% endif %}
+</div>
+
+<script>
+    function get() {
+        var js = document.createElement('script');
+        var head = document.getElementsByTagName('head')[0];
+        js.src = 'http://api.money.126.net/data/feed/0000001,1399001?callback=refreshPrice';
+        head.appendChild(js);
+    }
+</script>
+
+{% endblock %}

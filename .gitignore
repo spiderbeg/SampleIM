@@ -1,0 +1,13 @@
+# 忽略python编译产生的 .pyc .pyo .pyd 文件
+*.py[cod] 
+dist
+__pycache__/
+user-data/
+db.sqlite3
+.DS_Store
+settings-server.py
+uwsgi_params
+/im/migrations/*_initial.py
+*.log
+*.conf
+*.ini

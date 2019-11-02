@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if form.errors %}
+        <p>Your username and password didn't match. Please try again.</p>
+        <p>Or please sign in.</p>
+    {% endif %}
+    <div>
+    <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+        <table>
+        <tr>
+            <td>{{ form.username.label_tag }}</td>
+            <td>{{ form.username }}</td>
+        </tr>
+        
+        <tr>
+            <td>{{ form.password.label_tag }}</td>
+            <td>{{ form.password }}</td>
+        </tr>
+        </table>
+        <input type="submit" value="login" />
+        <input type="hidden" name="next" value="/im/getLogin/" />
+        <!-- <p>{{next}}</p> -->
+    </form>
+    </div>
+    <p></p>
+    <div>
+    	 <button type="button"><a href="{% url 'im:signup' %}">Sign in</a></button>
+    </div>
+
+{% endblock %}
