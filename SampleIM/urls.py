@@ -19,7 +19,8 @@ from django.contrib.auth import views
 from . import settings
 
 urlpatterns = [
-    path('im/', include('im.urls')), # 这个是我们的 APP
+    path('im/', include('im.urls')),
+    path('imapi/', include('imapi.urls')),
     path('admin/', admin.site.urls),
     path('accounts/login/', views.LoginView.as_view(),{'next_page': settings.LOGIN_REDIRECT_URL}, name='login'),# name='login',定向login.html
     # path('accounts/logout/', views.LogoutView.as_view(), {'next_page': settings.LOGOUT_REDIRECT_URL},name='logout'),

@@ -30,9 +30,9 @@ def talkRoom(request):
     # uid = request.user.pk
     group,created = Group.objects.get_or_create(name='firsttest') # 测试用群
     # print(type(group),dir(group))
-    gp = group.groupmessage_set.all()
+    # gp = group.groupmessage_set.all()
     # print(gp)
-    return render(request, 'chatroom.html', {'gourpmessages': gp}) #
+    return render(request, 'im/chatroom.html', {'gourpmessages': ''}) #
 
 
 def getLogin(request):
@@ -67,4 +67,4 @@ def signup(request):#用户注册
             return redirect('im:talkRoom')
     else:
         form = UserCreationForm()
-    return render(request, 'signup.html', {'form':form})
+    return render(request, 'im/signup.html', {'form':form})

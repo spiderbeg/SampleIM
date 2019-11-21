@@ -13,6 +13,8 @@
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
 	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
+	<link rel="stylesheet" type="text/css" href="{% static 'im/css/display.css' %}" />
+
 </head>
 <body>
   <div style=" width:1450px; margin:auto;">
@@ -25,7 +27,7 @@
 		  </div>
 		  <ul class="nav navbar-nav">
 			{% if user.is_authenticated %}
-				<li class="active" onclick="checkForm('sn')" id='bugo1'><a href="{% url 'im:getLogout'  %}"> Hello {{ user.username }} 退出</a></li>
+				<li class="active" onclick="checkForm('sn')" id='bugo1'><a href="{% url 'im:getLogout'  %}"> Hello <span id='username'>{{ user.username }}</span>退出</a></li>
 			{% else %}
 				<li class="a" onclick="checkForm('sn')" id='bugo1'><a href="{% url 'im:signup' %}">注册</a></li>
 				<li class="a" onclick="checkForm('sn')" id='bugo1'><a href="{% url 'login' %}">登录</a></li>

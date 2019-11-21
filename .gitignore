@@ -11,3 +11,4 @@ uwsgi_params
 *.log
 *.conf
 *.ini
+*.cfg
