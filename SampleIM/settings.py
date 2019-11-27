@@ -55,7 +55,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'SampleIM.urls'
+# https://docs.djangoproject.com/zh-hans/2.2/topics/http/urls/
+ROOT_URLCONF = 'SampleIM.urls' # 网站确定根目录
 
 TEMPLATES = [
     {

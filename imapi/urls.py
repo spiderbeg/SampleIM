@@ -6,6 +6,7 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register('total', views.TotalMessageViewSet, base_name='total') 
 router.register('groupmessage', views.GroupMessageViewSet)
+router.register('usermessage', views.UserMessageViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

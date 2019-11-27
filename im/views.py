@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, login
 
+from im import signals # 调用记录处理
+
 # Create your views here.
 
 def sendmessage(request):
@@ -32,7 +34,7 @@ def talkRoom(request):
     # print(type(group),dir(group))
     # gp = group.groupmessage_set.all()
     # print(gp)
-    return render(request, 'im/chatroom.html', {'gourpmessages': ''}) #
+    return render(request, 'im/chatroom2.html', {'gourpmessages': ''}) #
 
 
 def getLogin(request):

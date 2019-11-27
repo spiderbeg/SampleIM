@@ -7,15 +7,20 @@ from im.models import UserMessage, GroupMessage, Group
  2 多模型数据表示
 """
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id','username']
+
 class UserMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserMessage
         fields = '__all__'
         
 class GroupMessageSerializer(serializers.ModelSerializer):
-    # groupname = serializers.ReadOnlyField(source='group.name') # 多对一 关联； 一对多：snippets = serializers.PrimaryKeyRelatedField(many=True, queryset=Snippet.objects.all())
+    groupname = serializers.ReadOnlyField(source='group.name') # 多对一 关联； 一对多：snippets = serializers.PrimaryKeyRelatedField(many=True, queryset=Snippet.objects.all())
     # snippets = serializers.HyperlinkedRelatedField(view_name='group-detail', read_only=True)
     class Meta:
         model = GroupMessage
-        fields = ['message', 'timeg', 'sender', 'pk',]
+        fields = ['message', 'timeg', 'sender', 'pk','groupname']
         # fields = ['__all__', 'snippets']

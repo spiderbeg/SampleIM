@@ -2,12 +2,14 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User # 导入 Django 验证系统
 
+
 # Create your models here.
 class UserProfile(models.Model):
     """用户扩展信息"""
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     loginTime = models.DateTimeField(default=timezone.now)
     logoutTime = models.DateTimeField(default=timezone.now)
+    online = models.BooleanField(default=False)
 
     def __str__(self):
         return '%s: %s'%(self.user.username, self.loginTime)

@@ -17,12 +17,28 @@
         </div>
 
 </div>
-<div id='chatframe'> 
+<!-- <div id='chatframe'> 
     <p>room</p>
 
     <ul>
         <li id='nothing' style="display: none;">~~~</li>
     </ul>
+</div> -->
+
+<div id='chatframe'> 
+    <div id='group'>
+        <p>group</p>
+
+        <ul>
+            <li id='gnothing' style="display: none;">~~~</li>
+        </ul>
+    </div>
+    <div id='user'>
+        <p>user</p>
+        <ul>
+            <li id='unothing' style="display: none;">~~~</li>
+        </ul>
+    </div>
 </div>
 
 
@@ -32,15 +48,25 @@
     });
     function clock() {
         var gj = $.getJSON('/imapi/total/', {}, function(data) {
-            var li = $('#chatframe>ul>li');
+            // 群聊情况
+            var li = $('#group>ul>li');
             li.remove(); // 所有<li>全被删除
-            chat = $("#chatframe>ul"); //聊天内容
+            chat = $("#group>ul"); //聊天内容
             console.log('ok',data);
             gm = data.groupmessage;
             for(var i=0, len=gm.length; i<len; i++){
-                var s = '<span class="sender"> ' + gm[i].sender + '</span>' + '<span class="message">' + gm[i].message + '<span>' + '<span class="stime">' + gm[i].timeg + '<span>'
+                var s = '<span class="sender"> ' + gm[i].sender + '</span>' + '<span class="message">' + gm[i].message + '</span>' + '<span class="stime">' + gm[i].timeg + gm[i].groupname + '</span>'
                 chat.append('<li>' + s + '</li>');
-            }
+            };
+            // 私聊情况
+            var li2 = $('#user>ul>li');
+            li2.remove();
+            chat2 = $('#user>ul');
+            us = data.users
+            for (var i=0, len=us.length; i<len; i++){
+                chat2.append('<li>' + us[i].username + '</li>')
+            };
+            
         });
         return false;
         console.log('请求失败')
