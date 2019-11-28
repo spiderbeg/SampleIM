@@ -13,9 +13,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id','username']
 
 class UserMessageSerializer(serializers.ModelSerializer):
+    receiver = serializers.ReadOnlyField(source='user.user2Name')
     class Meta:
         model = UserMessage
-        fields = '__all__'
+        fields = ['timeu', 'message', 'sender', 'receiver']
         
 class GroupMessageSerializer(serializers.ModelSerializer):
     groupname = serializers.ReadOnlyField(source='group.name') # 多对一 关联； 一对多：snippets = serializers.PrimaryKeyRelatedField(many=True, queryset=Snippet.objects.all())

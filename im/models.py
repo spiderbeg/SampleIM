@@ -23,7 +23,7 @@ class UserRelation(models.Model):
     umid2 = models.PositiveIntegerField(default=0) # 同上
 
     def __str__(self):
-        return '%s-%s'%(self.userName, self.user2Name)
+        return '%s -> %s'%(self.userName, self.user2Name)
 
 class Group(models.Model):
     """群组信息"""
@@ -41,7 +41,7 @@ class GroupUser(models.Model):
     gmid = models.PositiveIntegerField(default=0) # 记录用户接收的消息
 
     def __str__(self):
-        return '%s-%s'%(self.userName, self.groupName)
+        return '%s->>%s'%(self.userName, self.groupName)
 
 class UserMessage(models.Model):
     """用户之间消息"""

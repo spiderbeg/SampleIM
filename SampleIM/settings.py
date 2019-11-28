@@ -25,7 +25,10 @@ SECRET_KEY = 'hrrm$50evd&uyh_8*76*=po^((hw5%3_$a9gq=f@xqy-rt@xj7'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1','172.16.2.202']
+
+# 浏览器关闭，session 失效
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # 登录或退出后的重定向界面
 LOGIN_REDIRECT_URL = '/im/getLogin/'  # https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-LOGOUT_REDIRECT_URL

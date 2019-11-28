@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models import Q
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,6 +17,7 @@ from imapi.serializer import UserMessageSerializer, GroupMessageSerializer, User
 # Create your views here.
 """ ViewSet 简化操作
 """
+# curl -X POST -d "message=gdivudgjfd&sender=t2&to=spiderbeg" --user t2:pythonbegin1 http://127.0.0.1:8000/imapi/usermessage/
 
 class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -27,21 +29,30 @@ class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
     def list(self, request, format=None, **kwargs):
         user = request.user
         print(type(user), user)
+
         # 用户列表
-        # up = UserProfile.objects.filter(online=True)
         queryset3 = User.objects.filter(userprofile__online=True) # 筛选 
         ur_serializer = UserSerializer(queryset3, many=True) 
+
         # 用户之间的信息
-        queryset = UserMessage.objects.all()
-        um_serializer = UserMessageSerializer(queryset, many=True)
+        ur = UserRelation.objects.filter(Q(userName=request.user.username) | Q(user2Name=request.user.username)) # Q 可进行复杂查询
+        dz2 = {}
+        for ur2 in ur:
+            queryset = UserMessage.objects.filter(user=ur2)[::-1][:20]
+            serializer = UserMessageSerializer(queryset, many=True)
+            dz2[str(ur2)] = serializer.data
+        um_serializer = dz2
+
         # 群组消息
         queryset2 = GroupMessage.objects.all()[::-1][:20]
+        gms = queryset2[-1].pk
+        gme = queryset2[0].pk
         gm_serializer = GroupMessageSerializer(queryset2, many=True)
         dz = {
             'users': ur_serializer.data,
-            'usermessage': um_serializer.data,
+            'usermessage': um_serializer,
             'groupmessage': gm_serializer.data,
-            'thanks': 'right!',
+            'um_status': {'start':gms,'end':gme},
         }
         return Response(dz)
     def retrieve(self, *args, **kwargs):
@@ -53,10 +64,11 @@ class GroupMessageViewSet(viewsets.ModelViewSet):
     '''
     queryset = GroupMessage.objects.all()
     serializer_class = GroupMessageSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,permissions.IsAuthenticated,
                           IsOwnerOrReadOnly]
     # 保存数据
     def perform_create(self, serializer):
+        print(11111111111111111111111111,self.request.POST['sender'])
         group = Group.objects.get(name='firsttest') # 对于外键的处理
         serializer.save(group=group)
 
@@ -66,8 +78,23 @@ class UserMessageViewSet(viewsets.ModelViewSet):
     """
     queryset = UserMessage.objects.all()
     serializer_class = UserMessageSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,permissions.IsAuthenticated,
                           IsOwnerOrReadOnly]
+    # 保存数据
+    def perform_create(self, serializer):
+        sender = self.request.user
+        to = User.objects.get(username=self.request.POST['to'])
+        ur,created = UserRelation.objects.get_or_create(user=sender,userName=sender.username,user2Name=self.request.POST['to'])
+        print(2222222, sender,to,ur)
+        serializer.save(user=ur)
+    def list(self, request): # 重写方法
+        ur = UserRelation.objects.filter(Q(userName=request.user.username) | Q(user2Name=request.user.username)) # Q 可进行复杂查询
+        dz = {}
+        for ur2 in ur:
+            queryset = UserMessage.objects.filter(user=ur2)
+            serializer = UserMessageSerializer(queryset, many=True)
+            dz[str(ur2)] = serializer.data
+        return Response(dz)
 
 @api_view(['GET'])
 def groupmgpk(request, format=None): # 函数式的写法

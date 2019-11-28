@@ -81,6 +81,11 @@
 $(function(){
     var int=self.setInterval("clock()",2000);
 });
+localStorage.gms = 0;
+localStorage.gme = 0;
+localStorage.ums = 0;
+localStorage.ume = 0;
+
 function clock() {
     var gj = $.getJSON('/imapi/total/', {}, function(data) {
         //获取点击的用户
@@ -99,15 +104,17 @@ function clock() {
         // 群聊情况
         var ac = $('#username_list>li.activate'); //激活用户
         if(ac[0]!=null){//第一次获取不到，所以忽略第一次
-            var who = ac[0].getAttribute("id");
+            var who = ac[0].getAttribute("id"); // 获取当前选择用户
             console.log('激活用户',who);
-            if (who==="first"){//判断激活群组
+            console.log('ok',data);
+            if (who==="first" && localStorage.gms != gm[gm.length-1].pk | localStorage.gme != gm[0].pk){//判断激活群组
                 var li = $('#main>ul>li');
-                // console.log(li)
                 li.remove(); // 所有<li>全被删除
-                chat = $("#main>ul"); //聊天内容
-                console.log('ok',data);
                 gm = data.groupmessage;
+                chat = $("#main>ul"); //聊天内容
+                localStorage.gms = gm[gm.length-1].pk 
+                localStorage.gme = gm[0].pk
+                console.log('开始',localStorage.gms,'结束',localStorage.gme) 
                 for(var i=0, len=gm.length; i<len; i++){
                     var i2 = len - i - 1
                     var sendtime = '<h3>'+ gm[i2].timeg.substring(0,19) +'</h3>'
@@ -120,17 +127,18 @@ function clock() {
                     }
                     chat.append(s);
                 };
+                //聊天页面自动滚动到最底部
+                var d=$("#chat");
+                d[0].scrollTop = d[0].scrollHeight;
                 
             }else{
-                var li = $('#main>ul>li');
-                // console.log(li)
-                li.remove(); // 所有<li>全被删除
+                // var li = $('#main>ul>li');
+                // // console.log(li)
+                // li.remove(); // 所有<li>全被删除
+                console.log('暂无操作')
             };
         }
-        // console.log('滚动吧 pk')
-        //聊天页面自动滚动到最底部
-        var d=$("#chat");
-        d[0].scrollTop = d[0].scrollHeight;
+        
         
         
         // 用户列表
@@ -178,7 +186,7 @@ function showm(ac, chioce) {
 document.getElementById("username_list").addEventListener("click", someFunction);
 function someFunction(event) {
     var user =  document.getElementById(event.target.id);
-    if(user != null){
+    if(user != null && event.target.id != "username_list"){
         var li3 = $('#user_list>ul>li');
         for(var i=0, len=li3.length; i<len; i++){
             li3[i].setAttribute("class", "deactivate");
@@ -231,6 +239,5 @@ function post_message(){
     messageinput.value = "" //清空输入框
 }        
 </script>
-
 
 {% endblock %}
