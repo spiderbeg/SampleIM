@@ -85,6 +85,16 @@ localStorage.gms = 0;
 localStorage.gme = 0;
 localStorage.ums = 0;
 localStorage.ume = 0;
+localStorage.user = 'a';
+localStorage.me = 'a';
+
+function compare(p){ //这是比较函数
+    return function(m,n){
+        var a = m[p];
+        var b = n[p];
+        return a - b; //升序
+    }
+}
 
 function clock() {
     var gj = $.getJSON('/imapi/total/', {}, function(data) {
@@ -107,14 +117,36 @@ function clock() {
             var who = ac[0].getAttribute("id"); // 获取当前选择用户
             console.log('激活用户',who);
             console.log('ok',data);
-            if (who==="first" && localStorage.gms != gm[gm.length-1].pk | localStorage.gme != gm[0].pk){//判断激活群组
+            gm = data.groupmessage;
+            // 用户信息预备 1
+            var uml = [];
+            if(who != 'first'){
+                um = data.usermessage;
+                var s1 = who + ' -> ' + sender;
+                var s2 = sender + ' -> ' + who;
+                console.log(s1, s2, um[s1], um[s2]);
+                if(um[s1] != undefined){
+                    for(var i=0, len=um[s1].length; i<len; i++){
+                        uml.push(um[s1][i])
+                    }
+                }
+                if(um[s2] != undefined){
+                    for(var i=0, len=um[s2].length; i<len; i++){
+                        uml.push(um[s2][i])
+                    }
+                }
+                uml.sort(compare("pk"));
+                console.log('用户信息',uml);
+            }
+            //判断激活群组 1
+            if (who==="first" && localStorage.user != who | localStorage.gms != gm[gm.length-1].pk | localStorage.gme != gm[0].pk){
                 var li = $('#main>ul>li');
                 li.remove(); // 所有<li>全被删除
-                gm = data.groupmessage;
                 chat = $("#main>ul"); //聊天内容
+                localStorage.user = who
                 localStorage.gms = gm[gm.length-1].pk 
                 localStorage.gme = gm[0].pk
-                console.log('开始',localStorage.gms,'结束',localStorage.gme) 
+                console.log('群组开始',localStorage.gms,'结束',localStorage.gme) 
                 for(var i=0, len=gm.length; i<len; i++){
                     var i2 = len - i - 1
                     var sendtime = '<h3>'+ gm[i2].timeg.substring(0,19) +'</h3>'
@@ -130,11 +162,38 @@ function clock() {
                 //聊天页面自动滚动到最底部
                 var d=$("#chat");
                 d[0].scrollTop = d[0].scrollHeight;
-                
-            }else{
-                // var li = $('#main>ul>li');
-                // // console.log(li)
-                // li.remove(); // 所有<li>全被删除
+
+            // 用户信息 2
+            }else if(who != 'first' && uml.length === 0) {
+                localStorage.user = who
+                var li = $('#main>ul>li');
+                li.remove(); // 所有<li>全被删除
+                console.log('无对话')
+            }else if(who != 'first' && who != localStorage.user | localStorage.ums != uml[uml.length-1].pk | localStorage.ume != uml[0].pk){
+                //相同操作
+                var li = $('#main>ul>li');
+                li.remove(); // 所有<li>全被删除
+                chat = $("#main>ul"); //聊天内容
+                localStorage.ums = uml[uml.length-1].pk 
+                localStorage.ume = uml[0].pk
+                localStorage.user = who
+                console.log(localStorage.user,'用户开始',localStorage.ums,'结束',localStorage.ume) 
+                for(var i=0, len=uml.length; i<len; i++){
+                    var i2 = i
+                    var sendtime = '<h3>'+ uml[i2].timeu.substring(0,19) +'</h3>'
+                    var senduser = ' <h2>' + uml[i2].sender + '</h2>'
+                    var sendmessage = '<div class="message">' + uml[i2].message + '</div>'
+                    if(uml[i2].sender===sender){
+                        var s = '<li class="me"> <div class="entete"> <span class="status blue"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
+                    }else{
+                        var s = '<li class="you"> <div class="entete"> <span class="status green"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
+                    }
+                    chat.append(s);
+                };
+                //聊天页面自动滚动到最底部
+                var d=$("#chat");
+                d[0].scrollTop = d[0].scrollHeight;
+            } else {
                 console.log('暂无操作')
             };
         }
