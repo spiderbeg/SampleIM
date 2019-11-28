@@ -28,10 +28,10 @@ class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated] # 权限设置，登录用户可见
     def list(self, request, format=None, **kwargs):
         user = request.user
-        print(type(user), user)
-
+        # print(type(user), user)
         # 用户列表
-        queryset3 = User.objects.filter(userprofile__online=True) # 筛选 
+        # queryset3 = User.objects.filter(userprofile__online=True) # 筛选最近登录的用户 主要是 django 的关闭；浏览器 session 失效操作不太准确
+        queryset3 = request.online_now # 利用中间件缓存设置记录在线用户
         ur_serializer = UserSerializer(queryset3, many=True) 
 
         # 用户之间的信息

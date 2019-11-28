@@ -56,6 +56,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # add myself https://djangosnippets.org/snippets/10617/
+    'SampleIM.middleware.OnlineNowMiddleware',
 ]
 
 # https://docs.djangoproject.com/zh-hans/2.2/topics/http/urls/
