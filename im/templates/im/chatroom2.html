@@ -277,24 +277,48 @@ function getCookie(name) {
 }
 
 function post_message(){
+    // 信息预备，发送者及接收者
+    // 发送方 获取用户名
+    var sender = document.getElementById("username").innerHTML; // 获取网页内容
+    // 接收方
+    var ac = $('#username_list>li.activate'); //激活用户
+    if(ac[0]!=null){//第一次获取不到，所以忽略第一次
+        var who = ac[0].getAttribute("id"); // 获取当前选择用户
+    }
+    // csrftoken
     var csrftoken = getCookie('csrftoken'); // csrf
     console.log(csrftoken)
     var messageinput = document.getElementById("inpumessage");
     var message = messageinput.value; //获取输入框内容
-    var sender = document.getElementById("username").innerHTML; // 获取网页内容
     console.log(sender, message)
-    $.ajax({
-        type: "POST",
-        url: '/imapi/groupmessage/',
-        data: {'message':message,'sender':sender},
-        headers:{"X-CSRFToken": csrftoken},
-        success: function (newEnd) {
-            console.log(newEnd);
-        },
-        error: function () {
-            alert("There was an error, please try again!")
-        }
-        });
+    if(ac[0]!=null && who === 'first'){
+        $.ajax({
+            type: "POST",
+            url: '/imapi/groupmessage/',
+            data: {'message':message,'sender':sender},
+            headers:{"X-CSRFToken": csrftoken},
+            success: function (newEnd) {
+                console.log(newEnd);
+            },
+            error: function () {
+                alert("There was an error, please try again!")
+            }
+            });
+    }else{
+        $.ajax({
+            type: "POST",
+            url: '/imapi/usermessage/',
+            data: {'message':message,'sender':sender,'to':who},
+            headers:{"X-CSRFToken": csrftoken},
+            success: function (newEnd) {
+                console.log(newEnd);
+            },
+            error: function () {
+                alert("There was an error, please try again!")
+            }
+            });
+    }  
+    
     messageinput.value = "" //清空输入框
 }        
 </script>
