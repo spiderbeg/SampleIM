@@ -11,5 +11,6 @@ router.register('usermessage', views.UserMessageViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('groupmgpk/', views.groupmgpk),
+    path('historymessage/', views.history_message),
     path('api-auth/', include('rest_framework.urls'))
 ]

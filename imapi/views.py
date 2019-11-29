@@ -21,8 +21,9 @@ from imapi.serializer import UserMessageSerializer, GroupMessageSerializer, User
 
 class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
     """
-       用户初次登录时
-       返回与用户相关信息
+    返回用户最新消息
+    用户初次登录时
+    返回与用户相关信息
     """
     # 添加权限
     permission_classes = [permissions.IsAuthenticated] # 权限设置，登录用户可见
@@ -31,20 +32,20 @@ class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
         # print(type(user), user)
         # 用户列表
         # queryset3 = User.objects.filter(userprofile__online=True) # 筛选最近登录的用户 主要是 django 的关闭；浏览器 session 失效操作不太准确
-        queryset3 = request.online_now # 利用中间件缓存设置记录在线用户
+        queryset3 = request.online_now # 利用中间件缓存设置记录在线用户，并获取在线用户
         ur_serializer = UserSerializer(queryset3, many=True) 
 
         # 用户之间的信息
         ur = UserRelation.objects.filter(Q(userName=request.user.username) | Q(user2Name=request.user.username)) # Q 可进行复杂查询
         dz2 = {}
         for ur2 in ur:
-            queryset = UserMessage.objects.filter(user=ur2)[::-1][:20]
+            queryset = UserMessage.objects.filter(user=ur2)[::-1][:5]
             serializer = UserMessageSerializer(queryset, many=True)
             dz2[str(ur2)] = serializer.data
         um_serializer = dz2
 
         # 群组消息
-        queryset2 = GroupMessage.objects.all()[::-1][:20]
+        queryset2 = GroupMessage.objects.all()[::-1][:10]
         gms = queryset2[-1].pk
         gme = queryset2[0].pk
         gm_serializer = GroupMessageSerializer(queryset2, many=True)
@@ -85,7 +86,7 @@ class UserMessageViewSet(viewsets.ModelViewSet):
         sender = self.request.user
         to = User.objects.get(username=self.request.POST['to'])
         ur,created = UserRelation.objects.get_or_create(user=sender,userName=sender.username,user2Name=self.request.POST['to'])
-        print(2222222, sender,to,ur)
+        # print(2222222, sender,to,ur)
         serializer.save(user=ur)
     def list(self, request): # 重写方法
         ur = UserRelation.objects.filter(Q(userName=request.user.username) | Q(user2Name=request.user.username)) # Q 可进行复杂查询
@@ -110,4 +111,30 @@ def groupmgpk(request, format=None): # 函数式的写法
 
     return Response({'error':'please log in'}, status=status.HTTP_400_BAD_REQUEST)
 
-    
+@api_view(['GET'])
+def history_message(request, format=None): # 函数式的写法
+    """
+    返回用户群聊接收到的id
+    """
+    if request.method == 'GET' and request.user.is_authenticated and 'user1' in request.GET:
+        print(11111111,request.GET)
+        user1name = request.GET['user1']
+        user2name = request.GET['user2']
+        minpk = request.GET['minpk']
+        tp = request.GET['type']
+        if tp == 'personal':
+            # 用户之间的信息
+            ur = UserRelation.objects.filter(Q(userName=user1name,user2Name=user2name) | Q(userName=user2name,user2Name=user1name)) # Q 可进行复杂查询
+            dz2 = {}
+            for ur2 in ur:
+                queryset = UserMessage.objects.filter(user=ur2, pk__lt=int(minpk))[::-1][:5]
+                # print('queryset of um',queryset)
+                serializer = UserMessageSerializer(queryset, many=True)
+                dz2[str(ur2)] = serializer.data
+            hm_serializer = dz2
+        else:
+            queryset2 = GroupMessage.objects.filter(pk__lt=int(minpk))[::-1][:10]
+            hm_serializer = GroupMessageSerializer(queryset2, many=True).data
+        return Response(hm_serializer)
+
+    return Response({'error':'please add parameter'}, status=status.HTTP_400_BAD_REQUEST)

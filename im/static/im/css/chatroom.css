@@ -65,6 +65,13 @@ aside li{
 .activate{ 
 	background-color: cadetblue;
 }
+/* 历史消息 */
+.history{
+	display:table;
+	margin:0 auto;
+	color: white;
+}
+
 aside li:hover{
 	background-color:#5e616a;
 }

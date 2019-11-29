@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 ONLINE_THRESHOLD = getattr(settings, 'ONLINE_THRESHOLD', 10)
 ONLINE_MAX = getattr(settings, 'ONLINE_MAX', 50) # 最大在线人数
 
-def get_online_now(self):
+def get_online_now(self): 
     return User.objects.filter(id__in=self.online_now_ids or [])
 
 
