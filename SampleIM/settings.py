@@ -34,6 +34,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 LOGIN_REDIRECT_URL = '/im/getLogin/'  # https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-LOGOUT_REDIRECT_URL
 # LOGOUT_REDIRECT_URL = '/im/getLogout/'
 
+
 # Application definition
 
 INSTALLED_APPS = [

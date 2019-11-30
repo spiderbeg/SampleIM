@@ -28,32 +28,45 @@ class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
     # 添加权限
     permission_classes = [permissions.IsAuthenticated] # 权限设置，登录用户可见
     def list(self, request, format=None, **kwargs):
-        user = request.user
-        # print(type(user), user)
+        """返回用户最新消息
+        """
+        dz3 = {} # 记录用户最新消息 pk
         # 用户列表
         # queryset3 = User.objects.filter(userprofile__online=True) # 筛选最近登录的用户 主要是 django 的关闭；浏览器 session 失效操作不太准确
-        queryset3 = request.online_now # 利用中间件缓存设置记录在线用户，并获取在线用户
+        queryset3 = request.online_now if hasattr(request,'online_now') else User.objects.filter([])# 利用中间件缓存设置记录在线用户，并获取在线用户
+        onlineuser = [q.username for q in queryset3] # 在线用户名
         ur_serializer = UserSerializer(queryset3, many=True) 
+
 
         # 用户之间的信息
         ur = UserRelation.objects.filter(Q(userName=request.user.username) | Q(user2Name=request.user.username)) # Q 可进行复杂查询
         dz2 = {}
         for ur2 in ur:
             queryset = UserMessage.objects.filter(user=ur2)[::-1][:5]
+            # print('用户私聊消息',queryset)
             serializer = UserMessageSerializer(queryset, many=True)
             dz2[str(ur2)] = serializer.data
-        um_serializer = dz2
+            # 最新消息处理
+            for i,q in enumerate(queryset):
+                talker = q.user.user2Name if q.sender == request.user.username else q.sender
+                if talker not in onlineuser: break
+                temps = "%s->%s"% (request.user.username, talker)
+                if i == 0: dz3[temps] = 0
+                if dz3[temps] < q.pk: dz3[temps] = q.pk 
 
+        um_serializer = dz2
         # 群组消息
         queryset2 = GroupMessage.objects.all()[::-1][:10]
-        gms = queryset2[-1].pk
-        gme = queryset2[0].pk
         gm_serializer = GroupMessageSerializer(queryset2, many=True)
+        # 最新消息 PK
+        if len(queryset2) != 0: dz3["%s->%s"%(request.user.username, queryset2[0].group.name)] = queryset2[0].pk # 群组最新消息
+        # print(dz3)
+
         dz = {
             'users': ur_serializer.data,
             'usermessage': um_serializer,
             'groupmessage': gm_serializer.data,
-            'um_status': {'start':gms,'end':gme},
+            'message_status': dz3,
         }
         return Response(dz)
     def retrieve(self, *args, **kwargs):
@@ -69,7 +82,7 @@ class GroupMessageViewSet(viewsets.ModelViewSet):
                           IsOwnerOrReadOnly]
     # 保存数据
     def perform_create(self, serializer):
-        print(11111111111111111111111111,self.request.POST['sender'])
+        # print(11111111111111111111111111,self.request.POST['sender'])
         group = Group.objects.get(name='firsttest') # 对于外键的处理
         serializer.save(group=group)
 

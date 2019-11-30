@@ -3,7 +3,7 @@ from django.conf import settings
 
 from django.contrib.auth.models import User
 
-ONLINE_THRESHOLD = getattr(settings, 'ONLINE_THRESHOLD', 10)
+ONLINE_THRESHOLD = getattr(settings, 'ONLINE_THRESHOLD', 3)
 ONLINE_MAX = getattr(settings, 'ONLINE_MAX', 50) # 最大在线人数
 
 def get_online_now(self): 

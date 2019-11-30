@@ -79,7 +79,7 @@
 <!-- 消息更新 获取最新消息 -->
 <script type=text/javascript> //获取群组消息
 $(function(){
-    var int=self.setInterval("clock()",2000);//数据请求间隔
+    var int=self.setInterval("clock()", 500);//数据请求间隔
 });
 
 localStorage.user = 'a'; // 记录当前聊天对象
@@ -94,21 +94,77 @@ function compare(p){ //这是比较函数
 
 function clock() {
     var gj = $.getJSON('/imapi/total/', {}, function(data) {
-        //获取点击的用户
-        var li3 = $('#user_list>ul>li');
-        var ulist = [];
-        for(var i=0, len=li3.length; i<len; i++){
-            liid = li3[i].getAttribute("id");
-            ulist.push(liid);
-        }
-        console.log('ulist',ulist); // 用户列表
         // 获取用户名
         var sender = document.getElementById("username").innerHTML; // 获取网页内容
         // console.log(sender)
+        //激活用户
+        var ac = $('#username_list>li.activate'); 
+
+        //获取用户列表
+        var li3 = $('#user_list>ul>li');
+        var ulist = [];
+        for(var i=0, len=li3.length; i<len; i++){
+            var liid = li3[i].getAttribute("id");
+            ulist.push(liid);
+            //比较最新消息
+            // var ms = data.message_status;
+            // var limaxpk = li3[i].getAttribute("maxpk");
+            // console.log('记录的 maxpk', limaxpk)
+            // var limaxpk = parseInt(limaxpk);
+            // console.log('记录的 maxpk', limaxpk)
+            // 消息状态判断
+            // if (typeof limaxpk != limaxpk){ //第一次
+            //     console.log('???????????????运行了没'); 
+            //     if(ac[0]!=null){
+            //         // 接收用户信息预备 1
+            //         var umlt = [];
+            //         if(liid != 'first' && liid != sender){
+            //             um = data.usermessage;
+            //             var s1 = liid + ' -> ' + sender;
+            //             var s2 = sender + ' -> ' + liid;
+            //             console.log(s1, s2, um[s1], um[s2]);
+            //             if(um[s1] != undefined){
+            //                 for(var i=0, len=um[s1].length; i<len; i++){
+            //                     umlt.push(um[s1][i]);
+            //                 }
+            //             }
+            //             if(um[s2] != undefined){
+            //                 for(var i=0, len=um[s2].length; i<len; i++){
+            //                     umlt.push(um[s2][i]);
+            //                 }
+            //             }
+            //             umlt.sort(compare("pk"));
+            //             console.log('用户信息',sender,liid,data,umlt);
+            //             //添加消息记录
+            //             //添加消息记录操作
+            //             var user =  document.getElementById(liid);
+            //             user.setAttribute("maxpk", umlt[umlt.length-1].pk);
+            //             console.log('添加 maxpk',umlt[umlt.length-1].pk, user)
+            //             // if (maxid===0){
+            //             //     user.setAttribute("minpk", uml[0].pk);//设定最大值 pk
+            //             // }
+            //         }
+            //     }
+            // } else {
+            //     if (liid==='first'){//群组消息名字
+            //         liid = 'firsttest'
+            //     }
+            //     var st = sender + '->' + liid; // 符合接口对象取消息值
+            //     console.log('对象取值',ms, st, ms[st])
+            //     var status = li3[i].children[1].children[1].children[0]; // 定位到 span 节点
+            //     if (ms[st]>limaxpk){         
+            //         status.setAttribute("class", "status orange");
+            //     }else{
+            //         status.setAttribute("class", "status green");
+            //     }
+            //     console.log(liid,'消息记录情况，接口 记录', ms[st], limaxpk);
+            // }
+        }
+        console.log('ulist',ulist); // 用户列表
 
         //聊天信息比较
-        // 群聊情况
-        var ac = $('#username_list>li.activate'); //激活用户
+        // // 群聊情况
+        // var ac = $('#username_list>li.activate'); //激活用户
         if(ac[0]!=null){//第一次获取不到，所以忽略第一次
             var who = ac[0].getAttribute("id"); // 获取当前选择用户
             var maxid = ac[0].getAttribute("maxpk");
@@ -118,7 +174,7 @@ function clock() {
             console.log('激活用户',who,'储存用户',localStorage.user);
             console.log('ok 最新消息',data);
             gm = data.groupmessage;
-            // 接收用户信息预备 1
+            // // 接收用户信息预备 1
             var uml = [];
             if(who != 'first'){
                 um = data.usermessage;
@@ -139,6 +195,7 @@ function clock() {
                 console.log('用户信息',uml);
             }
 
+            //当前聊天信息比较
             //判断激活群组 1
             if (who==="first" && localStorage.user != who | maxid != gm[0].pk){//最新消息
                 //节点操作
@@ -288,11 +345,9 @@ function clock() {
         };
         
         
-        
         // 用户列表
         var us = data.users;
         var ulist2 = ['first'];
-        console.log('cehsiyeytuytu',data,us)
         for (var i=0, len=us.length; i<len; i++){
             ulist2.push(us[i].username);
         }
@@ -316,11 +371,14 @@ function clock() {
                     var sb = '<li style="display: none;" id="' + us[i].username + '"> <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1940306/chat_avatar_01.jpg" alt="avatar"> <div>  <h2>';
                     var sq = sb + us[i].username + sh;
                     chat2.append(sq);
-                }
-                
+                }  
             };
         }
-    });
+
+        //检测是否有新信息
+
+
+    });// post 请求后的函数
     return false;
     console.log('请求失败')
     };
@@ -411,16 +469,15 @@ function post_message(){
 
 <!-- 获取历史消息 -->
 <script>
-
-function gethistory(){
-    function compare2(p){ //这是比较函数
+function compare2(p){ //这是比较函数
     return function(m,n){
         var a = m[p];
         var b = n[p];
-        return b - a; //升序
+        return b - a; //降序
     }
 }
 
+function gethistory(){
     // 数据准备
     //获取当前用户名
     var sender = document.getElementById("username").innerHTML; // 获取网页内容
@@ -439,6 +496,10 @@ function gethistory(){
     //发送请求
     var gj = $.getJSON('/imapi/historymessage/', {"user1":sender,"user2":who,"type":type,"minpk":minpk}, function(history){
         console.log('历史消息',history)
+        if(history.length===0){//已经用户群聊信息，退出
+            console.log(history.length);
+            return false;
+        }
         //处理数据
         //加载群聊历史记录
         if (type=='group'){
@@ -478,6 +539,9 @@ function gethistory(){
             }
             uml2.sort(compare2("pk"));
             console.log('用户信息',uml2);
+            if(uml2.length === 0){
+                return false;
+            }
             
             var history = uml2;
             var li = $('#main>ul>li');
@@ -495,8 +559,11 @@ function gethistory(){
                 $('#history').after(s);
             }
         };
+        console.log(history.length)
         console.log('历史消息序号',history[0].pk,history[history.length-1].pk);
         ac[0].setAttribute("minpk", history[history.length-1].pk);//记录最小  pK
+        
+        
     });
 }
 </script>
