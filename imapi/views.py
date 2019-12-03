@@ -33,10 +33,9 @@ class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
         dz3 = {} # 记录用户最新消息 pk
         # 用户列表
         # queryset3 = User.objects.filter(userprofile__online=True) # 筛选最近登录的用户 主要是 django 的关闭；浏览器 session 失效操作不太准确
-        queryset3 = request.online_now if hasattr(request,'online_now') else User.objects.filter([])# 利用中间件缓存设置记录在线用户，并获取在线用户
+        queryset3 = request.online_now # 利用中间件缓存设置记录在线用户，并获取在线用户
         onlineuser = [q.username for q in queryset3] # 在线用户名
         ur_serializer = UserSerializer(queryset3, many=True) 
-
 
         # 用户之间的信息
         ur = UserRelation.objects.filter(Q(userName=request.user.username) | Q(user2Name=request.user.username)) # Q 可进行复杂查询
@@ -60,7 +59,6 @@ class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
         gm_serializer = GroupMessageSerializer(queryset2, many=True)
         # 最新消息 PK
         if len(queryset2) != 0: dz3["%s->%s"%(request.user.username, queryset2[0].group.name)] = queryset2[0].pk # 群组最新消息
-        # print(dz3)
 
         dz = {
             'users': ur_serializer.data,
@@ -99,7 +97,6 @@ class UserMessageViewSet(viewsets.ModelViewSet):
         sender = self.request.user
         to = User.objects.get(username=self.request.POST['to'])
         ur,created = UserRelation.objects.get_or_create(user=sender,userName=sender.username,user2Name=self.request.POST['to'])
-        # print(2222222, sender,to,ur)
         serializer.save(user=ur)
     def list(self, request): # 重写方法
         ur = UserRelation.objects.filter(Q(userName=request.user.username) | Q(user2Name=request.user.username)) # Q 可进行复杂查询

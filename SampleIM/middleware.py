@@ -3,8 +3,10 @@ from django.conf import settings
 
 from django.contrib.auth.models import User
 
-ONLINE_THRESHOLD = getattr(settings, 'ONLINE_THRESHOLD', 3)
+ONLINE_THRESHOLD = getattr(settings, 'ONLINE_THRESHOLD', 3) # 先从settings 中拿 ONLINE_THRESHOLD 的配置，没有就用这里的配置 3
 ONLINE_MAX = getattr(settings, 'ONLINE_MAX', 50) # 最大在线人数
+# print(11111111111111,dir(settings))
+# print(22222222222222,cache)
 
 def get_online_now(self): 
     return User.objects.filter(id__in=self.online_now_ids or [])
@@ -24,10 +26,10 @@ class OnlineNowMiddleware(object):
     def __call__(self, request):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
-        
-        response = self.get_response(request)
 
-        self.process_request(request) # 这是分界线
+        self.process_request(request)
+
+        response = self.get_response(request)  # 这是分界线
 
         # Code to be executed for each request/response after
         # the view is called.
