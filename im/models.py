@@ -51,7 +51,7 @@ class UserMessage(models.Model):
     sender = models.CharField(max_length=60)
 
     def __str__(self):
-        return '%s: %s->%s'%(str(self.timeu), self.sender, self.user.user2Name)
+        return '%s: %s->%s'%(str(self.timeu), self.sender, self.user.user2Name) + str(self.pk)
 
 class GroupMessage(models.Model):
     """群消息"""

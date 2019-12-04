@@ -42,16 +42,19 @@ class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
         dz2 = {}
         for ur2 in ur:
             queryset = UserMessage.objects.filter(user=ur2)[::-1][:5]
-            # print('用户私聊消息',queryset)
             serializer = UserMessageSerializer(queryset, many=True)
             dz2[str(ur2)] = serializer.data
             # 最新消息处理
-            for i,q in enumerate(queryset):
+            for q in queryset:
                 talker = q.user.user2Name if q.sender == request.user.username else q.sender
                 if talker not in onlineuser: break
                 temps = "%s->%s"% (request.user.username, talker)
-                if i == 0: dz3[temps] = 0
-                if dz3[temps] < q.pk: dz3[temps] = q.pk 
+                if not dz3.get(temps,False): dz3[temps] = 0
+                if dz3[temps] < q.pk: 
+                    dz3[temps] = q.pk
+                    if q.sender == request.user.username and ur2.umid < q.pk: # 保存用户最新消息 id
+                        ur2.umid = q.pk
+                        ur2.save()
 
         um_serializer = dz2
         # 群组消息
@@ -62,8 +65,8 @@ class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
 
         dz = {
             'users': ur_serializer.data,
-            'usermessage': um_serializer,
-            'groupmessage': gm_serializer.data,
+            # 'usermessage': um_serializer,
+            # 'groupmessage': gm_serializer.data,
             'message_status': dz3,
         }
         return Response(dz)
@@ -83,6 +86,7 @@ class GroupMessageViewSet(viewsets.ModelViewSet):
         # print(11111111111111111111111111,self.request.POST['sender'])
         group = Group.objects.get(name='firsttest') # 对于外键的处理
         serializer.save(group=group)
+        # 此时用户最新
 
 class UserMessageViewSet(viewsets.ModelViewSet):
     """
@@ -126,11 +130,12 @@ def history_message(request, format=None): # 函数式的写法
     """
     返回用户群聊接收到的id
     """
-    if request.method == 'GET' and request.user.is_authenticated and 'user1' in request.GET:
+    paralist = ['user1','user2','minpk','type']
+    if request.method == 'GET' and request.user.is_authenticated and all(k in request.GET and  request.GET[k] not in ['NaN','undefined','null'] for k in paralist): # all() 所有为真返回真
         print(11111111,request.GET)
         user1name = request.GET['user1']
         user2name = request.GET['user2']
-        minpk = request.GET['minpk']
+        minpk = int(request.GET['minpk'])
         tp = request.GET['type']
         if tp == 'personal':
             # 用户之间的信息
@@ -142,9 +147,42 @@ def history_message(request, format=None): # 函数式的写法
                 serializer = UserMessageSerializer(queryset, many=True)
                 dz2[str(ur2)] = serializer.data
             hm_serializer = dz2
+            # print('返回的是啥',hm_serializer)
+
         else:
+            print(minpk)
             queryset2 = GroupMessage.objects.filter(pk__lt=int(minpk))[::-1][:10]
             hm_serializer = GroupMessageSerializer(queryset2, many=True).data
         return Response(hm_serializer)
 
-    return Response({'error':'please add parameter'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'error':'please use correct parameters'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def newest_message(request, format=None): # 函数式的写法
+    """
+    返回用户群聊接收到的id
+    """
+    paralist = ['user1','user2','maxpk','type']
+    if request.method == 'GET' and request.user.is_authenticated and all(k in request.GET and  request.GET[k] not in ['NaN','undefined','null'] for k in paralist): # all() 所有为真返回真
+        print(11111111,request.GET,request.user)
+        user1name = request.GET['user1']
+        user2name = request.GET['user2']
+        maxpk = request.GET['maxpk']
+        tp = request.GET['type']
+        if tp == 'personal':
+            # 用户之间的信息
+            ur = UserRelation.objects.filter(Q(userName=user1name,user2Name=user2name) | Q(userName=user2name,user2Name=user1name)) # Q 可进行复杂查询
+            dz2 = {}
+            for ur2 in ur:
+                queryset = UserMessage.objects.filter(user=ur2, pk__gt=int(maxpk))[::-1]
+                # print('queryset of um',queryset)
+                serializer = UserMessageSerializer(queryset, many=True)
+                dz2[str(ur2)] = serializer.data
+            hm_serializer = dz2
+        else:
+            queryset2 = GroupMessage.objects.filter(pk__gt=int(maxpk)).reverse() # 与[::-1] 相同
+            hm_serializer = GroupMessageSerializer(queryset2, many=True).data
+        return Response(hm_serializer)
+
+    return Response({'error':'please use correct parameters'}, status=status.HTTP_400_BAD_REQUEST)
