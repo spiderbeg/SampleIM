@@ -48,7 +48,7 @@ class UserMessage(models.Model):
     user = models.ForeignKey(UserRelation, on_delete=models.CASCADE)
     message = models.CharField(max_length=120)
     timeu = models.DateTimeField(default=timezone.now)
-    sender = models.CharField(max_length=60)
+    sender = models.CharField(max_length=60) # 发送人 == UserRelation 中 userName
 
     def __str__(self):
         return '%s: %s->%s'%(str(self.timeu), self.sender, self.user.user2Name) + str(self.pk)

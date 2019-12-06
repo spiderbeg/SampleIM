@@ -31,42 +31,47 @@ class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
         """返回用户最新消息
         """
         dz3 = {} # 记录用户最新消息 pk
-        # 用户列表
-        # queryset3 = User.objects.filter(userprofile__online=True) # 筛选最近登录的用户 主要是 django 的关闭；浏览器 session 失效操作不太准确
+        # dz2 = {} # 用户上登录接收消息信息
+        # 1 用户列表
+        # 筛选最近登录的用户 主要是 django 的关闭；浏览器 session 失效操作不太准确
+        # queryset3 = User.objects.filter(userprofile__online=True)
         queryset3 = request.online_now # 利用中间件缓存设置记录在线用户，并获取在线用户
-        onlineuser = [q.username for q in queryset3] # 在线用户名
-        ur_serializer = UserSerializer(queryset3, many=True) 
+        onlineuser,users = [],[] # 在线用户名
+        for q in queryset3:
+            dz5 = {} 
+            dz5['username']=q.username
+            onlineuser.append(q.username)
+            users.append(dz5)
+        # ur_serializer = UserSerializer(queryset3, many=True) 
 
-        # 用户之间的信息
+        # 获取用户最新消息
         ur = UserRelation.objects.filter(Q(userName=request.user.username) | Q(user2Name=request.user.username)) # Q 可进行复杂查询
-        dz2 = {}
         for ur2 in ur:
-            queryset = UserMessage.objects.filter(user=ur2)[::-1][:5]
-            serializer = UserMessageSerializer(queryset, many=True)
-            dz2[str(ur2)] = serializer.data
+            queryset = UserMessage.objects.filter(user=ur2)[::-1][:5] # 最近的 5 条消息
+            # if ur2.userName != request.user.username and ur2.userName in onlineuser: dz2[ur2.userName] = ur2.umid # 获取在线用户记录的消息 id
             # 最新消息处理
             for q in queryset:
                 talker = q.user.user2Name if q.sender == request.user.username else q.sender
                 if talker not in onlineuser: break
                 temps = "%s->%s"% (request.user.username, talker)
-                if not dz3.get(temps,False): dz3[temps] = 0
+                if temps not in dz3: dz3[temps] = 0
                 if dz3[temps] < q.pk: 
                     dz3[temps] = q.pk
-                    if q.sender == request.user.username and ur2.umid < q.pk: # 保存用户最新消息 id
-                        ur2.umid = q.pk
-                        ur2.save()
+        # 保存用户最新消息 id
+        for ur2 in ur:
+            talker = ur2.user2Name if ur2.userName == request.user.username else ur2.userName
+            if talker not in onlineuser: break
+            temps = "%s->%s"% (request.user.username, talker)
+            if temps in dz3: ur2.umid = dz3[temps];ur2.save() # 需要前端保存用户未查看信息获取前端发送用户未查看信息到后端，后端再保存。
 
-        um_serializer = dz2
         # 群组消息
-        queryset2 = GroupMessage.objects.all()[::-1][:10]
-        gm_serializer = GroupMessageSerializer(queryset2, many=True)
         # 最新消息 PK
+        queryset2 = GroupMessage.objects.all()[::-1][:10]
         if len(queryset2) != 0: dz3["%s->%s"%(request.user.username, queryset2[0].group.name)] = queryset2[0].pk # 群组最新消息
 
         dz = {
-            'users': ur_serializer.data,
-            # 'usermessage': um_serializer,
-            # 'groupmessage': gm_serializer.data,
+            'users': users,
+            # 'last_messsage': dz2,
             'message_status': dz3,
         }
         return Response(dz)
@@ -114,14 +119,11 @@ class UserMessageViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 def groupmgpk(request, format=None): # 函数式的写法
     """
-    返回用户群聊接收到的id
+    测试接口
     """
-    if request.method == 'GET' and request.user.is_authenticated:
-        user = request.user
-        print(type(user), user, dir(user))
-        group = Group.objects.get(name='firsttest')
-        gu = GroupUser.objects.get(group=group,user=user)
-        return Response({'gmid':gu.pk})
+    if request.method == 'GET':
+        print('汝宁 running。。。。')
+        return Response({'gmid':'ok'})
 
     return Response({'error':'please log in'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -131,8 +133,9 @@ def history_message(request, format=None): # 函数式的写法
     返回用户群聊接收到的id
     """
     paralist = ['user1','user2','minpk','type']
+    # print('22222222',request)
     if request.method == 'GET' and request.user.is_authenticated and all(k in request.GET and  request.GET[k] not in ['NaN','undefined','null'] for k in paralist): # all() 所有为真返回真
-        print(11111111,request.GET)
+        # print(11111111,request.GET)
         user1name = request.GET['user1']
         user2name = request.GET['user2']
         minpk = int(request.GET['minpk'])
@@ -165,7 +168,7 @@ def newest_message(request, format=None): # 函数式的写法
     """
     paralist = ['user1','user2','maxpk','type']
     if request.method == 'GET' and request.user.is_authenticated and all(k in request.GET and  request.GET[k] not in ['NaN','undefined','null'] for k in paralist): # all() 所有为真返回真
-        print(11111111,request.GET,request.user)
+        # print(11111111,request.GET,request.user)
         user1name = request.GET['user1']
         user2name = request.GET['user2']
         maxpk = request.GET['maxpk']

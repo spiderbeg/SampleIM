@@ -1,27 +1,26 @@
 
 // 心跳包，定时请求数据
 $(function(){
-    var int=self.setInterval("clock()", 2000);//数据请求间隔
+    self.setInterval("clock()", 2000);//数据请求间隔
 });
 // 记录当前聊天对象
 localStorage.user = 'a'; 
-localStorage.status = 'a'; 
 // 请求当前最新消息状态，--主要逻辑
 function clock() {
-    var gj = $.getJSON('/imapi/total/', {}, function(data) {
-        // 获取用户名
-        var sender = document.getElementById("username").innerHTML; // 获取网页内容
+    $.getJSON('/imapi/total/', {}, function(data) {
+        // 从网页获取当前 登录用户名
+        var sender = document.getElementById("username").innerHTML;
         // 添加用户列表
         add_users(data,sender);
-        // 判断用户是否有新消息
         
         //获取当前聊天对象节点
         var ac = $('#username_list>li.activate'); 
-        //获取当前选择用户名
-        var who = ac[0].getAttribute("id"); 
-        var maxid = ac[0].getAttribute("maxpk");
-        if (!ac[0].hasAttribute("maxpk")){
+        //根据节点获取当前选择用户 id maxpk 属性，
+        var who = ac[0].getAttribute("id"); //当前聊天用户名 
+        if (!ac[0].hasAttribute("maxpk")){// 还没有创建 maxpk 属性
             maxid = 0;
+        }else{
+            var maxid = ac[0].getAttribute("maxpk"); // 当前对象最新 pk 值
         }
         console.log('激活用户',who,'储存用户',localStorage.user);
         console.log('ok 最新消息',data);
@@ -31,7 +30,8 @@ function clock() {
         }else{
             var st = sender + '->' + who;
         }
-        //当前聊天信息比较,第一次创建所有聊天信息,而后查看有无新消息
+        //当前聊天信息比较,
+        // 1 第一次创建所有聊天信息, 2 而后查看有无新消息
         var acs = $('#username_list>li'); 
         for (let i=0, len=acs.length;i<len;i++){
             var who2 = acs[i].getAttribute("id"); 
@@ -47,7 +47,9 @@ function clock() {
             if (maxid === 0 && who === 'first'){//第一次数据请求,更新s所有数据
                 if (who2==='first'){
                     //获取历史消息
-                    gethistory(who2,acs[i],data.message_status,style=0);
+                    // gethistory(who2,acs[i],data.message_status,style=0);
+                    var new1 = tms[st2]-10;
+                    get_newest(first=new1);
                 }else{
                     gethistory(who2,acs[i],data.message_status,style=1);
                 }
@@ -71,12 +73,13 @@ function clock() {
             console.log('群组节点显示修改',who);
             //修改当前聊天用户
             change_talker(who);
-            // 滚动到底部
-            $("#chat").animate({scrollTop: $('#chat').prop("scrollHeight")}, 800);
+            //聊天页面自动滚动到最底部
+            var d=$("#chat");
+            d[0].scrollTop = d[0].scrollHeight;
         }
         if(maxid != tms[st] && maxid != 0){// 2 更新最新消息
             //更新最新消息, maxpk 会在 get_newest() 内添加
-            get_newest();
+            get_newest();//滚动到底部在函数内实现
         }else{
             console.log('nothing change');
         }
@@ -108,9 +111,9 @@ function compare(p){
     }
 }
 
-//添加用户列表
+//添加管理用户列表
 function add_users(data,sender){
-    //获取用户列表
+    //获取前端用户列表
     var li3 = $('#user_list>ul>li');
     var ulist = [];
     for(let i=0, len=li3.length; i<len; i++){
@@ -118,25 +121,32 @@ function add_users(data,sender){
         ulist.push(liid);
     }
     console.log('ulist',ulist); // 用户列表
-    // 用户列表
+    // 接收后端返回用户列表
     var us = data.users;
     var ulist2 = ['first'];
     for (var i=0, len=us.length; i<len; i++){
         ulist2.push(us[i].username);
     }
     console.log('ulist2',ulist2);
-
-    //比较用户是否相同，不变则不修改
-    if (ulist.toString() === ulist2.toString()){ //不变
-        console.log('登录用户没变？',ulist.toString() === ulist2.toString())
-    }else{
-        var li2 = $('#user_list>ul>li');
-        li2.remove();
-        chat2 = $('#user_list>ul');
+     // 1 li3 前端用户列表节点 删除退出用户
+    for(let i=0, len=li3.length; i<len; i++){
+        let liid = li3[i].getAttribute("id");
+        if(!ulist2.includes(liid)){
+            li3[i].remove();
+        }
+    }
+    // 用户有无消息指示灯
+    var sh = '</h2> <h3> <span class="status green"></span> online </h3> </div> </li>';
+    // 用户列表节点
+    var chat2 = $('#user_list>ul');
+    // 添加群组
+    if(!ulist.includes('first')){
         var sb = '<li id="first" class="activate"> <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1940306/chat_avatar_01.jpg" alt="avatar"> <div>  <h2>';
-        var sh = '</h2> <h3> <span class="status green"></span> online </h3> </div> </li>';
         chat2.append(sb + 'first' + sh);
-        for (var i=0, len=us.length; i<len; i++){//隐藏用户自己的名字
+    }
+    // ulist2 后端返回用户列表，添加新用户
+    for (var i=0, len=us.length; i<len; i++){//隐藏用户自己的名字
+        if(!ulist.includes(us[i].username)){
             if(us[i].username != sender){
                 var sb = '<li id="' + us[i].username + '"> <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1940306/chat_avatar_01.jpg" alt="avatar"> <div>  <h2>';
                 var sq = sb + us[i].username + sh;
@@ -145,9 +155,34 @@ function add_users(data,sender){
                 var sb = '<li style="display: none;" id="' + us[i].username + '"> <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1940306/chat_avatar_01.jpg" alt="avatar"> <div>  <h2>';
                 var sq = sb + us[i].username + sh;
                 chat2.append(sq);
-            }  
-        };
-    }
+            }
+        }  
+    };
+
+    //比较用户是否相同，不变则不修改
+    // if (ulist.toString() === ulist2.toString()){ //不变
+    //     console.log('function: add_user -> 用户列表判断',ulist.toString() === ulist2.toString())
+    // }else{
+
+    //     var li2 = li3;
+    //     console.log('获取的用户列表',li2);
+    //     li2.remove();
+    //     chat2 = $('#user_list>ul');
+    //     var sb = '<li id="first" class="activate"> <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1940306/chat_avatar_01.jpg" alt="avatar"> <div>  <h2>';
+    //     var sh = '</h2> <h3> <span class="status green"></span> online </h3> </div> </li>';
+    //     chat2.append(sb + 'first' + sh);
+    //     for (var i=0, len=us.length; i<len; i++){//隐藏用户自己的名字
+    //         if(us[i].username != sender){
+    //             var sb = '<li id="' + us[i].username + '"> <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1940306/chat_avatar_01.jpg" alt="avatar"> <div>  <h2>';
+    //             var sq = sb + us[i].username + sh;
+    //             chat2.append(sq);
+    //         }else{
+    //             var sb = '<li style="display: none;" id="' + us[i].username + '"> <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1940306/chat_avatar_01.jpg" alt="avatar"> <div>  <h2>';
+    //             var sq = sb + us[i].username + sh;
+    //             chat2.append(sq);
+    //         }  
+    //     };
+    // }
 }
 
 // 发送群消息
@@ -261,7 +296,6 @@ function gethistory(who=null,li=null,data=1,style=0){
         var minpk = data[s] + 1;
         console.log('首次获取历史记录，应该在最新记录上加 1',data[s]);
     }
-    
     console.log('历史记录传输消息',sender,who,type,minpk);
     //发送请求
     $.getJSON('/imapi/historymessage/', {"user1":sender,"user2":who,"type":type,"minpk":minpk}, function(history){
@@ -304,7 +338,7 @@ function handle_history(history, type, sender,who,li,style){
     //加载历史记录
     chat = $("#main>ul"); //聊天内容
     for(var i=0, len=history.length; i<len; i++){
-        var i2 = i
+        var i2 = i;
         if (type==='group'){
             var sendtime = '<h3>'+ history[i2].timeg.substring(0,19) +'</h3>';
         }else{
@@ -312,15 +346,15 @@ function handle_history(history, type, sender,who,li,style){
         }
         
         var senduser = ' <h2>' + history[i2].sender + '</h2>';
-        var sendmessage = '<div class="message">' + history[i2].message + '</div>';
-        console.log('h history 0');
+        var sendmessage = '<div class="message">' + escapeHtml(history[i2].message) + '</div>';
+        // console.log('h history 0');
         if (style===0){
-            console.log('h history 1');
+            // console.log('h history 1');
             if(history[i2].sender===sender){
-                console.log('h history 2');
+                // console.log('h history 2');
                 var s = '<li name=' + who +' class="me"> <div class="entete"> <span class="status blue"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
             }else{
-                console.log('h history 3');
+                // console.log('h history 3');
                 var s = '<li name=' + who +' class="you"> <div class="entete"> <span class="status green"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
             }
             // 添加内容，这是 jquery 写法 https://www.w3school.com.cn/jquery/jquery_dom_add.asp
@@ -344,7 +378,7 @@ function handle_history(history, type, sender,who,li,style){
 }
 
 // 添加最新消息
-function get_newest(newest, type){
+function get_newest(first=0){
     // 数据准备
     //获取当前用户名
     var sender = document.getElementById("username").innerHTML; // 获取网页内容
@@ -356,19 +390,25 @@ function get_newest(newest, type){
     if(who==='first'){
         var type = 'group';
     }else{
-        var type = 'personal'
+        var type = 'personal';
     };
-    var maxpk = ac[0].getAttribute("maxpk")
+    var maxpk = ac[0].getAttribute("maxpk");
+    if(first!=0){//第一次加载
+        maxpk = first;
+    }
     console.log('最新传输消息 maxpx',sender,who,type,maxpk);
     //发送请求
     $.getJSON('/imapi/newestmessage/', {"user1":sender,"user2":who,"type":type,"maxpk":maxpk}, function(newest){
         // 加载最新消息
         console.log('newest 最新',newest)
-        handle_newest(newest,type,sender,who,ac);
+        handle_newest(newest,type,sender,who,ac,first);
+        //聊天页面自动滚动到最底部
+        var d=$("#chat");
+        d[0].scrollTop = d[0].scrollHeight;
     });
 }
 // 添加最新消息
-function handle_newest(newest,type,sender,who,ac){
+function handle_newest(newest,type,sender,who,ac,first){
     console.log('最新消息',newest);
     if (type === 'personal'){//整理用户最新消息
         // 接收用户信息预备 1
@@ -400,7 +440,7 @@ function handle_newest(newest,type,sender,who,ac){
     // 添加最新消息
     chat = $("#main>ul"); //聊天内容
     for(var i=0, len=newest.length; i<len; i++){
-        var i2 = len - i - 1;
+        var i2 = i;
         console.log('look out ',newest[i2])
         if (type==='group'){
             var sendtime = '<h3>'+ newest[i2].timeg.substring(0,19) +'</h3>';
@@ -409,7 +449,7 @@ function handle_newest(newest,type,sender,who,ac){
         }
         
         var senduser = ' <h2>' + newest[i2].sender + '</h2>';
-        var sendmessage = '<div class="message">' + newest[i2].message + '</div>';
+        var sendmessage = '<div class="message">' + escapeHtml(newest[i2].message) + '</div>';
         if(newest[i2].sender===sender){
             var s = '<li name= '+ who +' class="me"> <div class="entete"> <span class="status blue"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
         }else{
@@ -417,7 +457,10 @@ function handle_newest(newest,type,sender,who,ac){
         }
         chat.append(s);
     };
-    ac[0].setAttribute("maxpk", newest[0].pk);//记录最大  pK
+    ac[0].setAttribute("maxpk", newest[newest.length-1].pk);//记录最大  pK
+    if (first!=0){
+        ac[0].setAttribute("minpk", newest[0].pk);//记录最大  pK
+    }
 }
 
 //点击改变聊天对象颜色
@@ -437,3 +480,24 @@ function someFunction(event) {
         console.log(user);
         }
 }
+// html 标签转移函数
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+// //检测页面关闭, 暂时不考虑
+// window.addEventListener("beforeunload", function (e) {
+//     $.getJSON('/imapi/groupmgpk/', {}, function(history){
+//         console.log('are you ok ', history)
+//     })
+//     console.log('llllllllllllllllllllllll');
+//     var confirmationMessage = "\o/";
+//     (e || window.event).returnValue = confirmationMessage; //Gecko + IE
+//     return confirmationMessage;                            //Webkit, Safari, Chrome
+//   });
+
+
