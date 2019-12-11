@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...), This is a project's path.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -75,6 +75,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -152,4 +153,23 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
+# 当定位到 STATIC_ROOT 的静态文件时，使用的 url。
 STATIC_URL = '/static/'
+# 部署时收集静态文件的文件夹的绝对路径，且该目录初始时应该为空。
+STATIC_ROOT = os.path.join(BASE_DIR,'static') 
+"""
+django.contrib.staticfiles 安装在 INSTALLED_APPS. 
+django 模板标签中的 static 标签：
+ 1 在部署后为  STATIC_ROOT 指定的路径；由  STATICFILES_STORAGE 管理。
+ 2 在部署前由 STATICFILES_STORAGE 管理， 你的工程可能包含未与任何应用绑定的静态资源。
+   除了在 apps 中使用 static/ 目录，(在多 app 中，为了 django 识别，推荐 static/my_app_name/ 目录)。
+   你可以在配置文件中定义一个目录列表 (STATICFILES_DIRS) ，Django 会从中寻找静态文件。
+ 3 备注：参考 STATICFILES_FINDERS 配置的文档了解 staticfiles 是如何找到你的文件的细节。如下：
+   1 The default will find files stored in the STATICFILES_DIRS setting 
+     (using django.contrib.staticfiles.finders.FileSystemFinder) and 
+   2 in a static subdirectory of each app (using django.contrib.staticfiles.finders.AppDirectoriesFinder). 
+     If multiple files with the same name are present, the first file that is found will be used.
+"""
+# 保存用户上传文件的文件系统绝对路径
+MEDIA_ROOT = os.path.join(BASE_DIR,'media') 
+MEDIA_URL = '/media/'

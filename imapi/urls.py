@@ -13,5 +13,6 @@ urlpatterns = [
     path('groupmgpk/', views.groupmgpk),
     path('historymessage/', views.history_message),
     path('newestmessage/', views.newest_message),
+    path('imagefile/', views.imagefile),
     path('api-auth/', include('rest_framework.urls'))
 ]

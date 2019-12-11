@@ -24,7 +24,7 @@ function clock() {
         }
         var who = ac[0].getAttribute("id"); //当前聊天用户名 
         if (!ac[0].hasAttribute("maxpk")){// 还没有创建 maxpk 属性
-            maxid = 0;
+            var maxid = 0;
         }else{
             var maxid = ac[0].getAttribute("maxpk"); // 当前对象最新 pk 值
         }
@@ -203,7 +203,7 @@ function getCookie(name) {
     return cookieValue;
 }
 // 2.1 发送群消息 私聊消息
-function post_message(){
+function post_message(url=null,type='T'){
     // 信息预备，发送者及接收者
     // 发送方 获取用户名
     var sender = document.getElementById("username").innerHTML; // 获取网页内容
@@ -216,39 +216,50 @@ function post_message(){
     var who = ac[0].getAttribute("id"); // 获取当前选择用户
     // csrftoken
     var csrftoken = getCookie('csrftoken'); // csrf
-    console.log(csrftoken)
-    var messageinput = document.getElementById("inpumessage");
-    var message = messageinput.value; //获取输入框内容
+    console.log('function：post_message -> csrf: ',csrftoken)
+    if (type==='T'){
+        console.log('看看 message', url, type);
+        var messageinput = document.getElementById("inpumessage");
+        var message = messageinput.value; //获取输入框内容
+    }else if(type==='P'){
+        console.log('看看 url', url,type);
+        var message = url;
+    }else{
+        console.log('没有反应！？？！？')
+    }
+    
     console.log(sender, message)
     if(who === 'first'){
         $.ajax({
             type: "POST",
             url: '/imapi/groupmessage/',
-            data: {'message':message,'sender':sender},
+            data: {'message':message,'sender':sender, 'mtype':type},
             headers:{"X-CSRFToken": csrftoken},
             success: function (newEnd) {
                 console.log(newEnd);
             },
             error: function () {
-                alert("There was an error, please try again!")
+                alert("There was an error, please try again!");
             }
             });
     }else{
         $.ajax({
             type: "POST",
             url: '/imapi/usermessage/',
-            data: {'message':message,'sender':sender,'to':who},
+            data: {'message':message,'sender':sender,'to':who,'mtype':type},
             headers:{"X-CSRFToken": csrftoken},
             success: function (newEnd) {
                 console.log(newEnd);
             },
             error: function () {
-                alert("There was an error, please try again!")
+                alert("There was an error, please try again!");
             }
             });
     }  
+    if(url===null){
+        messageinput.value = "" //清空输入框
+    }
     
-    messageinput.value = "" //清空输入框
 }   
 
 
@@ -344,7 +355,11 @@ function handle_history(history, type, sender,who,li,style){
         }
         
         var senduser = ' <h2>' + history[i2].sender + '</h2>';
-        var sendmessage = '<div class="message">' + escapeHtml(history[i2].message) + '</div>';
+        if (history[i2].mtype ==='T'){//文字消息
+            var sendmessage = '<div class="message">' + escapeHtml(history[i2].message) + '</div>';
+        }else if (history[i2].mtype ==='P'){//图片消息    
+            var sendmessage = '<div class="message"> <img src='+ history[i2].message +' height="150" width="200"></div>';
+        }
         // console.log('h history 0');
         if (style===0){
             // console.log('h history 1');
@@ -440,7 +455,12 @@ function handle_newest(newest,type,sender,who,ac,first){
         }
         
         var senduser = ' <h2>' + newest[i2].sender + '</h2>';
-        var sendmessage = '<div class="message">' + escapeHtml(newest[i2].message) + '</div>';
+        console.log('function:handle_newest -> mtype: ', newest[i2].mtype)
+        if (newest[i2].mtype ==='T'){//文字消息
+            var sendmessage = '<div class="message">' + escapeHtml(newest[i2].message) + '</div>';
+        }else if (newest[i2].mtype ==='P'){//图片消息
+            var sendmessage = '<div class="message"> <img src='+ newest[i2].message +' height="150" width="200"></div>';
+        }
         if(newest[i2].sender===sender){
             var s = '<li name= '+ who +' class="me"> <div class="entete"> <span class="status blue"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>';
         }else{
@@ -477,6 +497,59 @@ function escapeHtml(unsafe) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
+
+// 发送文件到远程服务器，并返回 url
+$(document).ready(function(){
+    console.log('function: 文件选择监听')
+    //表单
+    var fileInput = document.getElementById('fileinput');
+    // 监听change事件:
+    fileInput.addEventListener('change', function () {
+        // 获取File引用:
+        var file = fileInput.files[0];
+        // 获取File信息:
+        var infor = '文件: ' + file.name + '<br>' +
+                        '大小: ' + file.size + '<br>' +
+                        '修改: ' + file.lastModifiedDate;
+        if (file.type !== 'image/jpeg' && file.type !== 'image/png' && file.type !== 'image/gif') {
+            alert('不是有效的图片文件!');
+            return;
+        }
+        // 读取文件:
+        var reader = new FileReader(); // https://developer.mozilla.org/zh-CN/docs/Web/API/FileReader
+        reader.onload = function(e) {
+            var data = e.target.result; // 'data:image/jpeg;base64,/9j/4AAQSk...(base64编码)...'            
+            console.log('function: 监听文件改变事件 -> 图片发出去了')
+            post_image(data);
+        };
+        // 以DataURL的形式读取文件:
+        reader.readAsDataURL(file);
+    });
+})  
+function post_image(data){// 上传图片，返回图片链接
+    console.log('function: post_image -> 发送图片')
+    // csrftoken
+    var csrftoken = getCookie('csrftoken'); // csrf
+    $.ajax({
+        type: "POST",
+        url: '/imapi/imagefile/',
+        data: data,
+        headers:{"X-CSRFToken": csrftoken, "Content-Disposition":'form-data; name="fieldName"; filename="filename.jpg"'},
+        success: function (image_url) {
+            console.log('function:post_image -> 返回的图片地址',image_url['image_path']);
+            // var url = document.domain + '/' + image_url;
+            // 发送图片消息
+            post_message(url=image_url['image_path'],type='P'); 
+            // 清空文件输入
+            document.querySelector('#fileinput').value = ''; 
+        },
+        error: function () {
+            alert("There was an error, please try again!");
+        }
+    });
+}
+
 // //检测页面关闭, 暂时不考虑
 // window.addEventListener("beforeunload", function (e) {
 //     $.getJSON('/imapi/groupmgpk/', {}, function(history){

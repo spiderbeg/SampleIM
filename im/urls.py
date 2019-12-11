@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from im import views
 
 app_name = 'im' # 你的应用名
 
@@ -10,6 +10,4 @@ urlpatterns = [
     path('getLogout/', views.getLogout, name="getLogout"),
     path('getLogin/', views.getLogin, name="getLogin"),
     path('sendmessage/', views.sendmessage, name="sendmessage"),
-
-
 ]

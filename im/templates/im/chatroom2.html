@@ -1,7 +1,6 @@
 {% extends "im/base.html" %}
 
 {% block content %}
-
 <div id="container">
     <aside id='user_list'> 
         <!-- 联系人名单 -->
@@ -26,9 +25,10 @@
             <p id="bottom"></p>
         </ul>
         <footer>
+            <input type="file" id="fileinput" value="发送图片" accept="image/*" />
             <textarea placeholder="Type your message" id='inpumessage'></textarea>
             <input maxlength="80" name="sender" type="text" style="display: none;" placeholder="消息发送" value='t2'> 
-            <button name="sender" onclick="post_message()">Send</button>
+            <button name="sender" onclick="post_message()">Send</button>    
         </footer>
     </main>
 </div>

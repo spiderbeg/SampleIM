@@ -49,9 +49,19 @@ class UserMessage(models.Model):
     message = models.CharField(max_length=120)
     timeu = models.DateTimeField(default=timezone.now)
     sender = models.CharField(max_length=60) # 发送人 == UserRelation 中 userName
+    MESSAGE_TYPE_CHOICES = [
+        ('T', 'TXT'),
+        ('P', 'IMAGINE'),
+        ('V', 'VIDEO'),
+    ]
+    mtype = models.CharField(
+        max_length=2,
+        choices=MESSAGE_TYPE_CHOICES,
+        default='T',
+    )
 
     def __str__(self):
-        return '%s: %s->%s'%(str(self.timeu), self.sender, self.user.user2Name) + str(self.pk)
+        return 'type %s -%s: %s->%s'%(self.mtype, str(self.timeu), self.sender, self.user.user2Name) + str(self.pk)
 
 class GroupMessage(models.Model):
     """群消息"""
@@ -59,6 +69,23 @@ class GroupMessage(models.Model):
     message = models.CharField(max_length=120)
     timeg = models.DateTimeField(default=timezone.now)
     sender = models.CharField(max_length=60)
+    MESSAGE_TYPE_CHOICES = [
+        ('T', 'TXT'),
+        ('P', 'IMAGINE'),
+        ('V', 'VIDEO'),
+    ]
+    mtype = models.CharField(
+        max_length=2,
+        choices=MESSAGE_TYPE_CHOICES,
+        default='T',
+    )
 
     def __str__(self):
-        return '%s:%s: %s'%(str(self.timeg), self.group, self.sender)
+        return 'type %s -%s:%s: %s'%(self.mtype, str(self.timeg), self.group, self.sender)
+
+class SaveImage(models.Model):
+    """存储接收的图片信息"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    image_file = models.ImageField(upload_to='images')
+    def __str__(self):
+        return '%s-%s'%(self.user.username, self.image_file)

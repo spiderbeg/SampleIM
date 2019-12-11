@@ -7,13 +7,17 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import parser_classes
+from rest_framework.parsers import FileUploadParser
 
+from PIL import Image
 
 from imapi.permissions import IsOwnerOrReadOnly
-from im.models import UserMessage, GroupMessage, UserRelation, Group, GroupUser, UserProfile
+from im.models import UserMessage, GroupMessage, UserRelation, Group, GroupUser, UserProfile, SaveImage
 from imapi.serializer import UserMessageSerializer, GroupMessageSerializer, UserSerializer
 
+import sys
 # Create your views here.
 """ ViewSet 简化操作
 """
@@ -153,7 +157,6 @@ def history_message(request, format=None): # 函数式的写法
             # print('返回的是啥',hm_serializer)
 
         else:
-            print(minpk)
             queryset2 = GroupMessage.objects.filter(pk__lt=int(minpk))[::-1][:10]
             hm_serializer = GroupMessageSerializer(queryset2, many=True).data
         return Response(hm_serializer)
@@ -189,3 +192,27 @@ def newest_message(request, format=None): # 函数式的写法
         return Response(hm_serializer)
 
     return Response({'error':'please use correct parameters'}, status=status.HTTP_400_BAD_REQUEST)
+
+# 保存文件到到服务器，并返回 url
+@api_view(['POST'])
+@parser_classes((FileUploadParser,))
+# @permission_classes((permissions.IsAuthenticated, ))
+def imagefile(request, format=None):
+    """
+     1 保存上传的图像文件
+     2 返回 url
+    """
+    import io
+    import base64
+    # 图片处理
+    bf = request.FILES # 等价于 request.data
+    bs = bf['file'].file.getvalue()
+    try:
+        b6 = str(bs).split('base64,',1)[1][:-1]
+        b = b6.encode('utf8')
+        b = base64.b64decode(b)
+        bf['file'].file = io.BytesIO(b)
+    except:
+        return Response({'error':'please use base64'}, status=status.HTTP_400_BAD_REQUEST)
+    pic, created = SaveImage.objects.get_or_create(user=request.user,image_file=bf['file'])
+    return Response({'image_path': pic.image_file.url})
