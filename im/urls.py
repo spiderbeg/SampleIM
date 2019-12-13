@@ -10,4 +10,5 @@ urlpatterns = [
     path('getLogout/', views.getLogout, name="getLogout"),
     path('getLogin/', views.getLogin, name="getLogin"),
     path('sendmessage/', views.sendmessage, name="sendmessage"),
+    path('test/', views.testform, name='testform'),
 ]

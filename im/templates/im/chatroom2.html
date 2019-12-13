@@ -1,6 +1,21 @@
 {% extends "im/base.html" %}
 
 {% block content %}
+<!-- <form method="POST" action="/im/test/" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name='image' accept="image/*" />
+    <button type="submit">ok</button>
+</form> -->
+<form method="POST" action="/im/test/" onsubmit="return checkForm()" id="test-form" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" id="err2" name='image' accept="image/*" />
+    <button type="submit">ok</button>
+    <p>
+        77777
+    </p>
+    <p id='text'></p>
+</form>
+<button onclick="test()">no</button>
 <div id="container">
     <aside id='user_list'> 
         <!-- 联系人名单 -->
@@ -25,10 +40,24 @@
             <p id="bottom"></p>
         </ul>
         <footer>
-            <input type="file" id="fileinput" value="发送图片" accept="image/*" />
-            <textarea placeholder="Type your message" id='inpumessage'></textarea>
-            <input maxlength="80" name="sender" type="text" style="display: none;" placeholder="消息发送" value='t2'> 
-            <button name="sender" onclick="post_message()">Send</button>    
+            <!-- <input type="file" id="fileinput" name='file' style="" accept="image/*" /> -->
+            <textarea placeholder="Type your message" id='inpumessage' onkeyup="if(event.keyCode == 13){post_message()}"></textarea>
+            <div id="emoji" style="display: none;">
+                <span id='e1' onclick="check_emoji(this)" ><img src="/media/emoji/face-with-tears-of-joy_1f602(1).png"></span>
+                <span id='e2' onclick="check_emoji(this)" ><img src="/media/emoji/face-with-tears-of-joy_1f602.png"></span>
+                <span id='e3' onclick="check_emoji(this)" ><img src="/media/emoji/grinning-face_1f600.png"></span>
+                <span id='e4' onclick="check_emoji(this)" ><img src="/media/emoji/smiling-face-with-open-mouth-and-cold-sweat_1f605.png"></span>
+            </div>
+            <input maxlength="80" name="sender" type="text" style="display: none;" placeholder="消息发送"> 
+            <div>
+                <span><button name="sender" onclick="post_message()">Message</button></span>
+                <span><button name="sendere" id='emojibutton'  onclick="emoji()">Emoji</button></span>
+                <span>
+                    <button id ="select_file" onclick="related_image()">Select Image</button>
+                    <input type="file" id="fileinput" name='file' style="display: none;" accept="image/*" />
+                </span>
+            </div>
+                
         </footer>
     </main>
 </div>

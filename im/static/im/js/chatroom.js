@@ -57,7 +57,7 @@ function clock() {
             if (maxid === 0 && who === 'first'){//当前用户初次登录 获取所有最近消息
                 if (who2==='first'){
                     // gethistory(who2,acs[i],data.message_status,style=0);
-                    var new1 = tms[st2]-10;
+                    var new1 = tms[st2]-20;
                     get_newest(sender,acs[i],first=new1);
                 }else{
                     gethistory(who2,acs[i],data.message_status,style=1);
@@ -407,7 +407,7 @@ function get_newest(sender,ac,first=0){
     //发送请求
     $.getJSON('/imapi/newestmessage/', {"user1":sender,"user2":who,"type":type,"maxpk":maxpk}, function(newest){
         // 加载最新消息
-        console.log('function: get_newest -> 最新',newest)
+        console.log('function: get_newest -> 最新',newest);
         handle_newest(newest,type,sender,who,ac,first);
         //聊天页面自动滚动到最底部
         var d=$("#chat");
@@ -499,7 +499,7 @@ function escapeHtml(unsafe) {
 }
 
 
-// 发送文件到远程服务器，并返回 url
+// 利用 formdata 发送处理好的到远程服务器，并返回 url
 $(document).ready(function(){
     console.log('function: 文件选择监听')
     //表单
@@ -516,31 +516,41 @@ $(document).ready(function(){
             alert('不是有效的图片文件!');
             return;
         }
-        // 读取文件:
-        var reader = new FileReader(); // https://developer.mozilla.org/zh-CN/docs/Web/API/FileReader
-        reader.onload = function(e) {
-            var data = e.target.result; // 'data:image/jpeg;base64,/9j/4AAQSk...(base64编码)...'            
-            console.log('function: 监听文件改变事件 -> 图片发出去了')
-            post_image(data);
-        };
-        // 以DataURL的形式读取文件:
-        reader.readAsDataURL(file);
+        // formdata:
+        var formData = new FormData();
+        formData.append("fileInput", file);
+        post_image(formData,file.name);
     });
 })  
-function post_image(data){// 上传图片，返回图片链接
-    console.log('function: post_image -> 发送图片')
+function test(){
+    console.log('function: 图片传送测试 文件选择监听');
+    //表单
+    var formData = new FormData();
+    var filei = document.getElementById('err2');
+    // console.log(filei.files[0]);
+    formData.append("fileInput", filei.files[0]);
+    // console.log('111111',typeof formData, formData.get('fileInput'),formData.entries());
+    post_image(formData);
+        
+}
+function post_image(data,filename="file"){// 上传图片，返回图片链接
+    console.log('function: post_image -> 发送图片');
     // csrftoken
     var csrftoken = getCookie('csrftoken'); // csrf
     $.ajax({
         type: "POST",
         url: '/imapi/imagefile/',
+        // url: '/im/test/',
         data: data,
-        headers:{"X-CSRFToken": csrftoken, "Content-Disposition":'form-data; name="fieldName"; filename="filename.jpg"'},
+        contentType:"multipart/form-data", 
+        processData: false, // jQuery不要去处理发送的数据
+        contentType: false, // jQuery不要去设置Content-Type请求头
+        headers:{"X-CSRFToken": csrftoken, "Content-Disposition":'attachment; filename=' + filename,},
         success: function (image_url) {
             console.log('function:post_image -> 返回的图片地址',image_url['image_path']);
-            // var url = document.domain + '/' + image_url;
             // 发送图片消息
             post_message(url=image_url['image_path'],type='P'); 
+            console.log('function: post_image -> 发送图片消息');
             // 清空文件输入
             document.querySelector('#fileinput').value = ''; 
         },
@@ -549,6 +559,50 @@ function post_image(data){// 上传图片，返回图片链接
         }
     });
 }
+
+// 检查 表单
+function checkForm(){
+    var form = document.getElementById('test-form');
+    console.log(form);
+    form.submit();
+    return false;
+}
+
+// 显示 emoji 图像
+function emoji(){
+    // 按钮
+    var button = document.getElementById('emojibutton');
+    var text = document.getElementById("inpumessage");
+    if(!text.hasAttribute("style")){
+        text.setAttribute("style","display:none;");
+        button.innerHTML = 'Return';
+    }else{
+        text.removeAttribute("style");
+        button.innerHTML = 'Emoji';
+    }
+    var em = document.getElementById("emoji");
+    if(em.hasAttribute("style")){
+        em.removeAttribute("style");
+    }else{
+        em.setAttribute("style","display:none;");
+    }
+    console.log('function:emoji -> 显示 emoji')
+}
+//选择 emoji 并发送
+function check_emoji(e){
+    var emoji_url = e.children[0].getAttribute("src");
+    console.log('function: check_emoji -> 发送的 emoji 地址 ',emoji_url);
+    // 发送信息
+    post_message(url=emoji_url, type='P');
+    // 隐藏 emoji
+    emoji();
+}
+
+//选择图片
+function related_image() {
+    $("#fileinput").click()
+}
+
 
 // //检测页面关闭, 暂时不考虑
 // window.addEventListener("beforeunload", function (e) {

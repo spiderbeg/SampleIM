@@ -1,7 +1,12 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User # 导入 Django 验证系统
+from django.conf import settings
 
+import os
+import base64
+
+from PIL import Image
 
 # Create your models here.
 class UserProfile(models.Model):
@@ -86,6 +91,25 @@ class GroupMessage(models.Model):
 class SaveImage(models.Model):
     """存储接收的图片信息"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    image_file = models.ImageField(upload_to='images')
+    image_file = models.ImageField(upload_to='images/%Y')
+    
     def __str__(self):
         return '%s-%s'%(self.user.username, self.image_file)
+
+    def get_cover_base64(self):
+        return image_as_base64(self.image_file.path)
+
+def image_as_base64(image_file):
+    """
+    将文件内容 base64 转为 二进制
+    """
+    print('跑了没',image_file)
+    if not os.path.isfile(image_file):
+        return None
+    with open(image_file, 'rb') as img_f:
+        rea = img_f.read()
+        print('保存的',rea[:1000])
+        encoded_string = base64.b64decode(rea)
+        print('转之后',encoded_string[:1000])
+    with open(image_file, 'wb') as img_f2:
+        img_f2.write(encoded_string)
