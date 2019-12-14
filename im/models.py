@@ -78,6 +78,7 @@ class GroupMessage(models.Model):
         ('T', 'TXT'),
         ('P', 'IMAGINE'),
         ('V', 'VIDEO'),
+        ('I', 'EMOJI'),
     ]
     mtype = models.CharField(
         max_length=2,

@@ -180,6 +180,14 @@ main header h3{
 	text-align:left;
 	border-radius:5px;
 }
+.displaypicture {
+	height: 150px;
+	width: 225px;
+}
+.displayemoji {
+	height: 50px;
+	width: 50px;
+}
 #chat .me{
 	text-align:right;
 }

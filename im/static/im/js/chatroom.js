@@ -150,12 +150,11 @@ function add_users(data,sender){
     for(let i=0, len=li3.length; i<len; i++){
         let liid = li3[i].getAttribute("id");
         if(!ulist2.includes(liid)){
-            var sel = '#chat>li[name='+ liid +']'
+            var sel = '#chat>li[name='+ liid +']';
             li3[i].remove();//删除用户列表元素
             //删除聊天列表相关内容
             var userchat = $(sel);
-            userchat.remove()
-            // console.log('jilu  ', userchat)
+            userchat.remove();
         }
     }
     //记录添加的用户
@@ -210,56 +209,48 @@ function post_message(url=null,type='T'){
     // 接收方
     var ac = $('#username_list>li.activate'); //激活用户
     if(!ac[0].hasAttribute("id")){
-        console.log("请等待");
+        console.log("function：post_message -> 暂无激活用户");
         return false;
     }
     var who = ac[0].getAttribute("id"); // 获取当前选择用户
     // csrftoken
     var csrftoken = getCookie('csrftoken'); // csrf
-    console.log('function：post_message -> csrf: ',csrftoken)
+    console.log('function：post_message ->  信息类型: ', type)
     if (type==='T'){
-        console.log('看看 message', url, type);
         var messageinput = document.getElementById("inpumessage");
         var message = messageinput.value; //获取输入框内容
     }else if(type==='P'){
-        console.log('看看 url', url,type);
+        var message = url;
+    }else if(type='I'){
         var message = url;
     }else{
         console.log('没有反应！？？！？')
+        return
     }
     
     console.log(sender, message)
-    if(who === 'first'){
-        $.ajax({
-            type: "POST",
-            url: '/imapi/groupmessage/',
-            data: {'message':message,'sender':sender, 'mtype':type},
-            headers:{"X-CSRFToken": csrftoken},
-            success: function (newEnd) {
-                console.log(newEnd);
-            },
-            error: function () {
-                alert("There was an error, please try again!");
-            }
-            });
+    if(who==='first'){
+        var surl = '/imapi/groupmessage/';
+        var sdata = {'message':message,'sender':sender, 'mtype':type};
     }else{
-        $.ajax({
-            type: "POST",
-            url: '/imapi/usermessage/',
-            data: {'message':message,'sender':sender,'to':who,'mtype':type},
-            headers:{"X-CSRFToken": csrftoken},
-            success: function (newEnd) {
-                console.log(newEnd);
-            },
-            error: function () {
-                alert("There was an error, please try again!");
-            }
-            });
-    }  
+        var surl = '/imapi/usermessage/';
+        var sdata = {'message':message,'sender':sender,'to':who,'mtype':type};
+    }
+    $.ajax({
+        type: "POST",
+        url: surl,
+        data: sdata,
+        headers:{"X-CSRFToken": csrftoken},
+        success: function (newEnd) {
+            console.log(newEnd);
+        },
+        error: function () {
+            alert("There was an error, please try again!");
+        }
+    });
     if(url===null){
         messageinput.value = "" //清空输入框
     }
-    
 }   
 
 
@@ -278,12 +269,14 @@ function gethistory(who=null,li=null,data=1,style=2){
     //获取当前用户名
     var sender = document.getElementById("username").innerHTML; // 获取网页内容
     //获取聊天对象
-    if (who===null | li === null){//无参数输入时
+    if (who===null | li === null){//无参数输入时, 正常获取历史消息
         //获取聊天对象
         var lis = $('#username_list>li.activate'); //激活用户
         if(lis[0]!=null){//第一次获取不到，所以忽略第一次
             var who = lis[0].getAttribute("id"); // 获取当前选择用户
             var li = lis[0] //当前选中节点
+        }else{
+            return
         }
     }
     //激活用户 节点 li
@@ -334,24 +327,24 @@ function handle_history(history, type, sender,who,li,style){
             }
         }
         uml2.sort(compare2("pk"));
-        console.log('用户信息',uml2);
+        console.log('function:handle_history -> 用户信息',uml2);
         if(uml2.length === 0){
             return false;
         }
-        
         var history = uml2;
     }else if(history.length===0){//已无用户群聊信息，退出
         return false;
     }
     //处理数据
     //加载历史记录
-    if (style===0){
-        history.reverse() //数组反转
+    if (style===0){//用户登录第一次 显示群组信息使用
+        history.reverse() 
     }
     
     chat = $("#main>ul"); //聊天内容
     for(var i=0, len=history.length; i<len; i++){
         var i2 = i;
+
         if (type==='group'){
             var sendtime = '<h3>'+ history[i2].timeg.substring(0,19) +'</h3>';
         }else{
@@ -362,7 +355,9 @@ function handle_history(history, type, sender,who,li,style){
         if (history[i2].mtype ==='T'){//文字消息
             var sendmessage = '<div class="message">' + escapeHtml(history[i2].message) + '</div>';
         }else if (history[i2].mtype ==='P'){//图片消息    
-            var sendmessage = '<div class="message"> <img src='+ history[i2].message +' height="150" width="200"></div>';
+            var sendmessage = '<div class="message"> <img src='+ history[i2].message +' class="displaypicture"></div>';
+        }else if(history[i2].mtype ==='I'){
+            var sendmessage = '<div class="message"> <img src='+ history[i2].message +' class="displayemoji"></div>';
         }
 
         if(history[i2].sender===sender){
@@ -375,6 +370,7 @@ function handle_history(history, type, sender,who,li,style){
         }else{
             var s2 = '<li style="display: none;" name=' + who +' class="you"> <div class="entete"> <span class="status green"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
         }
+
         if (style===0){
             chat.append(s);
         }else if(style===1){
@@ -395,14 +391,11 @@ function handle_history(history, type, sender,who,li,style){
         console.log('function:handle_history -> 历史消息序号 & 设置 minpk',history[0].pk,history[history.length-1].pk);
         li.setAttribute("minpk", history[history.length-1].pk);//记录最小  pK
     }
-    console.log('history',history)
-    
 }
 
 // 添加最新消息
-function get_newest(sender,ac,first=0){
+function get_newest(sender,ac){
     // 数据准备 当前登录用户、当前聊天对象节点、第一次的判断条件
-
     var who = ac.getAttribute("id"); // 获取当前选择用户
     if(who==='first'){
         var type = 'group';
@@ -410,22 +403,19 @@ function get_newest(sender,ac,first=0){
         var type = 'personal';
     };
     var maxpk = ac.getAttribute("maxpk");
-    if(first!=0){//第一次加载
-        maxpk = first;
-    }
     console.log('function: get_newest -> maxpx',sender,who,type,maxpk);
     //发送请求
     $.getJSON('/imapi/newestmessage/', {"user1":sender,"user2":who,"type":type,"maxpk":maxpk}, function(newest){
         // 加载最新消息
         console.log('function: get_newest -> 最新',newest);
-        handle_newest(newest,type,sender,who,ac,first);
+        handle_newest(newest,type,sender,who,ac);
         //聊天页面自动滚动到最底部
         var d=$("#chat");
         d[0].scrollTop = d[0].scrollHeight;
     });
 }
 // 添加最新消息
-function handle_newest(newest,type,sender,who,ac,first){
+function handle_newest(newest,type,sender,who,ac){
     //用户消息处理
     // 1 整理用户最新消息
     if (type === 'personal'){
@@ -446,7 +436,7 @@ function handle_newest(newest,type,sender,who,ac,first){
             }
         }
         uml2.sort(compare("pk"));
-        console.log('用户信息',uml2);
+        console.log('function:handle_newest -> 用户信息',uml2);
         if(uml2.length === 0){
             return false;
         }
@@ -454,7 +444,6 @@ function handle_newest(newest,type,sender,who,ac,first){
     }else if(newest.length===0){//已无用户群聊信息，退出
         return false;
     }
-    console.log(6666666666,newest)
     // 2 添加最新消息
     chat = $("#main>ul"); //聊天内容
     console.log(chat)
@@ -471,19 +460,19 @@ function handle_newest(newest,type,sender,who,ac,first){
         if (newest[i2].mtype ==='T'){//文字消息
             var sendmessage = '<div class="message">' + escapeHtml(newest[i2].message) + '</div>';
         }else if (newest[i2].mtype ==='P'){//图片消息
-            var sendmessage = '<div class="message"> <img src='+ newest[i2].message +' height="150" width="200"></div>';
+            var sendmessage = '<div class="message"> <img src='+ newest[i2].message +' class="displaypicture"></div>';
+        }else if(newest[i2].mtype ==='I'){
+            var sendmessage = '<div class="message"> <img src='+ history[i2].message +' class="displayemoji"></div>';
         }
         if(newest[i2].sender===sender){
             var s = '<li name= '+ who +' class="me"> <div class="entete"> <span class="status blue"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>';
         }else{
             var s = '<li name= '+ who +' class="you"> <div class="entete"> <span class="status green"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>';
         }
+
         chat.append(s);
     };
     ac.setAttribute("maxpk", newest[newest.length-1].pk);//记录最大  pK
-    if (first!=0){//第一次群组消息添加的特殊处理
-        ac.setAttribute("minpk", newest[0].pk);//记录最小  pK
-    }
 }
 
 //点击改变聊天对象颜色
@@ -524,7 +513,7 @@ $(document).ready(function(){
             alert('不是有效的图片文件!');
             return;
         }
-        // formdata:
+        // formdata: 将文件以模仿表单的形式提交
         var formData = new FormData();
         formData.append("fileInput", file);
         post_image(formData,file.name);
@@ -557,14 +546,6 @@ function post_image(data,filename="file"){
     });
 }
 
-// 检查 表单
-function checkForm(){
-    var form = document.getElementById('test-form');
-    console.log(form);
-    form.submit();
-    return false;
-}
-
 // 显示 emoji 图像
 function emoji(){
     // 按钮
@@ -590,7 +571,7 @@ function check_emoji(e){
     var emoji_url = e.children[0].getAttribute("src");
     console.log('function: check_emoji -> 发送的 emoji 地址 ',emoji_url);
     // 发送信息
-    post_message(url=emoji_url, type='P');
+    post_message(url=emoji_url, type='I');
     // 隐藏 emoji
     emoji();
 }
