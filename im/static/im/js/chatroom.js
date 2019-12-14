@@ -11,7 +11,7 @@ function clock() {
         console.log('function: clock -> -> -> ->新的操作开始。。<- <- <- <- \n -> ->');
         // 从网页获取当前 登录用户名
         var sender = document.getElementById("username").innerHTML;
-        // 修改用户列表，返回用户是否有新登录的
+        // 修改用户列表，返回新登录用户列表
         var addusers = add_users(data,sender);
         
         //获取当前聊天对象节点
@@ -56,9 +56,7 @@ function clock() {
             }
             if (maxid === 0 && who === 'first'){//当前用户初次登录 获取所有最近消息
                 if (who2==='first'){
-                    // gethistory(who2,acs[i],data.message_status,style=0);
-                    var new1 = tms[st2]-20;
-                    get_newest(sender,acs[i],first=new1);
+                    gethistory(who2,acs[i],data.message_status,style=0);
                 }else{
                     gethistory(who2,acs[i],data.message_status,style=1);
                 }
@@ -131,6 +129,8 @@ function compare(p){
 
 //添加管理用户列表
 function add_users(data,sender){
+    // 输入：用户列表信息，当前用户名
+    // 输出：添加的用户列表
     //获取前端用户列表
     var li3 = $('#user_list>ul>li');
     var ulist = [];
@@ -273,7 +273,7 @@ function compare2(p){ //这是比较函数
     }
 }
 // 2 请求发送
-function gethistory(who=null,li=null,data=1,style=0){
+function gethistory(who=null,li=null,data=1,style=2){
     // 数据准备
     //获取当前用户名
     var sender = document.getElementById("username").innerHTML; // 获取网页内容
@@ -313,7 +313,7 @@ function gethistory(who=null,li=null,data=1,style=0){
     });
 
 }
-// 第二步的历史数据处理
+// 第二步的历史数据处理三种情况 1 首次登录 first 显示 2 首次登录其他用户 不显示 3 获取其他用户信息显示
 function handle_history(history, type, sender,who,li,style){
     console.log('function:handle_history -> 历史消息',history);
     if (type === 'personal'){
@@ -345,6 +345,10 @@ function handle_history(history, type, sender,who,li,style){
     }
     //处理数据
     //加载历史记录
+    if (style===0){
+        history.reverse() //数组反转
+    }
+    
     chat = $("#main>ul"); //聊天内容
     for(var i=0, len=history.length; i<len; i++){
         var i2 = i;
@@ -360,33 +364,39 @@ function handle_history(history, type, sender,who,li,style){
         }else if (history[i2].mtype ==='P'){//图片消息    
             var sendmessage = '<div class="message"> <img src='+ history[i2].message +' height="150" width="200"></div>';
         }
-        // console.log('h history 0');
+
+        if(history[i2].sender===sender){
+            var s = '<li  name=' + who +' class="me"> <div class="entete"> <span class="status blue"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
+        }else{
+            var s = '<li  name=' + who +' class="you"> <div class="entete"> <span class="status green"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
+        }
+        if(history[i2].sender===sender){
+            var s2 = '<li style="display: none;" name=' + who +' class="me"> <div class="entete"> <span class="status blue"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
+        }else{
+            var s2 = '<li style="display: none;" name=' + who +' class="you"> <div class="entete"> <span class="status green"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
+        }
         if (style===0){
-            // console.log('h history 1');
-            if(history[i2].sender===sender){
-                // console.log('h history 2');
-                var s = '<li name=' + who +' class="me"> <div class="entete"> <span class="status blue"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
-            }else{
-                // console.log('h history 3');
-                var s = '<li name=' + who +' class="you"> <div class="entete"> <span class="status green"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
-            }
+            chat.append(s);
+        }else if(style===1){
             // 添加内容，这是 jquery 写法 https://www.w3school.com.cn/jquery/jquery_dom_add.asp
             //另外还有 DOM 的写法 -搜索-js 修改节点
-            $('#history').after(s);
-        }else if(style===1){ //添加用户信息
-            if(history[i2].sender===sender){
-                var s = '<li style="display: none;" name=' + who +' class="me"> <div class="entete"> <span class="status blue"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
-            }else{
-                var s = '<li style="display: none;" name=' + who +' class="you"> <div class="entete"> <span class="status green"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>'
-            }
-            // 添加内容，这是 jquery 写法 https://www.w3school.com.cn/jquery/jquery_dom_add.asp
-            //另外还有 DOM 的写法 -搜索-js 修改节点
+            $('#history').after(s2);
+        }else{
             $('#history').after(s);
         }
-        
-    };
-    console.log('function:handle_history -> 历史消息序号 & 设置 minpk',history[0].pk,history[history.length-1].pk);
-    li.setAttribute("minpk", history[history.length-1].pk);//记录最小  pK
+    }
+    if (style===0){
+        console.log('function:handle_history -> 第一次的登录 & 设置 minpk',history[0].pk,history[history.length-1].pk);
+        li.setAttribute("minpk", history[0].pk);//记录最小  pK
+        // 文本下拉
+        var d=$("#chat");
+        d[0].scrollTop = d[0].scrollHeight;
+    }else{
+        console.log('function:handle_history -> 历史消息序号 & 设置 minpk',history[0].pk,history[history.length-1].pk);
+        li.setAttribute("minpk", history[history.length-1].pk);//记录最小  pK
+    }
+    console.log('history',history)
+    
 }
 
 // 添加最新消息
@@ -444,8 +454,10 @@ function handle_newest(newest,type,sender,who,ac,first){
     }else if(newest.length===0){//已无用户群聊信息，退出
         return false;
     }
+    console.log(6666666666,newest)
     // 2 添加最新消息
     chat = $("#main>ul"); //聊天内容
+    console.log(chat)
     for(var i=0, len=newest.length; i<len; i++){
         var i2 = i;
         if (type==='group'){
@@ -508,10 +520,6 @@ $(document).ready(function(){
     fileInput.addEventListener('change', function () {
         // 获取File引用:
         var file = fileInput.files[0];
-        // 获取File信息:
-        var infor = '文件: ' + file.name + '<br>' +
-                        '大小: ' + file.size + '<br>' +
-                        '修改: ' + file.lastModifiedDate;
         if (file.type !== 'image/jpeg' && file.type !== 'image/png' && file.type !== 'image/gif') {
             alert('不是有效的图片文件!');
             return;
@@ -522,25 +530,14 @@ $(document).ready(function(){
         post_image(formData,file.name);
     });
 })  
-function test(){
-    console.log('function: 图片传送测试 文件选择监听');
-    //表单
-    var formData = new FormData();
-    var filei = document.getElementById('err2');
-    // console.log(filei.files[0]);
-    formData.append("fileInput", filei.files[0]);
-    // console.log('111111',typeof formData, formData.get('fileInput'),formData.entries());
-    post_image(formData);
-        
-}
-function post_image(data,filename="file"){// 上传图片，返回图片链接
+// 上传图片，返回图片链接
+function post_image(data,filename="file"){
     console.log('function: post_image -> 发送图片');
     // csrftoken
     var csrftoken = getCookie('csrftoken'); // csrf
     $.ajax({
         type: "POST",
         url: '/imapi/imagefile/',
-        // url: '/im/test/',
         data: data,
         contentType:"multipart/form-data", 
         processData: false, // jQuery不要去处理发送的数据
@@ -603,7 +600,16 @@ function related_image() {
     $("#fileinput").click()
 }
 
-
+// 测试用--django 表单图片传送测试
+function test(){
+    console.log('function: django 表单图片传送测试');
+    //表单
+    var formData = new FormData();
+    var filei = document.getElementById('err2');
+    formData.append("fileInput", filei.files[0]);
+    post_image(formData);
+        
+}
 // //检测页面关闭, 暂时不考虑
 // window.addEventListener("beforeunload", function (e) {
 //     $.getJSON('/imapi/groupmgpk/', {}, function(history){

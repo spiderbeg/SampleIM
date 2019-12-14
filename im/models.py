@@ -95,21 +95,3 @@ class SaveImage(models.Model):
     
     def __str__(self):
         return '%s-%s'%(self.user.username, self.image_file)
-
-    def get_cover_base64(self):
-        return image_as_base64(self.image_file.path)
-
-def image_as_base64(image_file):
-    """
-    将文件内容 base64 转为 二进制
-    """
-    print('跑了没',image_file)
-    if not os.path.isfile(image_file):
-        return None
-    with open(image_file, 'rb') as img_f:
-        rea = img_f.read()
-        print('保存的',rea[:1000])
-        encoded_string = base64.b64decode(rea)
-        print('转之后',encoded_string[:1000])
-    with open(image_file, 'wb') as img_f2:
-        img_f2.write(encoded_string)

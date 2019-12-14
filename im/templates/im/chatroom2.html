@@ -6,7 +6,7 @@
     <input type="file" name='image' accept="image/*" />
     <button type="submit">ok</button>
 </form> -->
-<form method="POST" action="/im/test/" onsubmit="return checkForm()" id="test-form" enctype="multipart/form-data">
+<!-- <form method="POST" action="/im/test/" onsubmit="return checkForm()" id="test-form" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="file" id="err2" name='image' accept="image/*" />
     <button type="submit">ok</button>
@@ -14,8 +14,8 @@
         77777
     </p>
     <p id='text'></p>
-</form>
-<button onclick="test()">no</button>
+</form> -->
+<!-- <button onclick="test()">no</button> -->
 <div id="container">
     <aside id='user_list'> 
         <!-- 联系人名单 -->
@@ -37,7 +37,6 @@
         </header>
         <ul id="chat">
             <a href="#"  id="history" class="history" onclick="gethistory()">history message</a>
-            <p id="bottom"></p>
         </ul>
         <footer>
             <!-- <input type="file" id="fileinput" name='file' style="" accept="image/*" /> -->

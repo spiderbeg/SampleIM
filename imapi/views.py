@@ -10,7 +10,7 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.decorators import parser_classes
-from rest_framework.parsers import FileUploadParser
+from rest_framework.parsers import FileUploadParser,FormParser
 
 from PIL import Image
 
@@ -196,18 +196,14 @@ def newest_message(request, format=None): # 函数式的写法
 
 # 保存文件到到服务器，并返回 url
 @api_view(['POST'])
-# @parser_classes((FileUploadParser,))
+# @parser_classes((FormParser,))
 @permission_classes((permissions.IsAuthenticated, ))
 def imagefile(request, format=None):
     """
      1 保存上传的图像文件
      2 返回 url
     """
-    # 图片处理, base64 编码后的数据在前端处理
+    # 获取上传的文件信息
     bf = request.FILES # <- django 等价于 request.data <-rest framework
-    print(bf)
-    # print('django 自带form 使用\n ',bf['fileInput'].file.getvalue())
     pic = SaveImage.objects.create(user=request.user,image_file=bf['fileInput'])
-    # # 图片内容 base64 转换为 二进制 
-    # pic.get_cover_base64()
     return Response({'image_path': pic.image_file.url})
