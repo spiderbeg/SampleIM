@@ -462,7 +462,7 @@ function handle_newest(newest,type,sender,who,ac){
         }else if (newest[i2].mtype ==='P'){//图片消息
             var sendmessage = '<div class="message"> <img src='+ newest[i2].message +' class="displaypicture"></div>';
         }else if(newest[i2].mtype ==='I'){
-            var sendmessage = '<div class="message"> <img src='+ history[i2].message +' class="displayemoji"></div>';
+            var sendmessage = '<div class="message"> <img src='+ newest[i2].message +' class="displayemoji"></div>';
         }
         if(newest[i2].sender===sender){
             var s = '<li name= '+ who +' class="me"> <div class="entete"> <span class="status blue"></span>' + senduser + sendtime + '</div> <div class="triangle"></div>' + sendmessage + '</li>';
