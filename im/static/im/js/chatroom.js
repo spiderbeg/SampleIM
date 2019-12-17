@@ -475,6 +475,7 @@ function handle_newest(newest,type,sender,who,ac){
     ac.setAttribute("maxpk", newest[newest.length-1].pk);//记录最大  pK
 }
 
+
 //点击改变聊天对象颜色
 $(document).ready(function(){// jquery 写法，页面加载完毕后执行
     document.getElementById("username_list").addEventListener("click", someFunction);
@@ -521,14 +522,17 @@ $(document).ready(function(){
 })  
 // 上传图片，返回图片链接
 function post_image(data,filename="file"){
-    console.log('function: post_image -> 发送图片');
+    console.log('function: post_image -> 发送图片', filename, data.get('fileInput'));
+    if (/.*[\u4e00-\u9fa5]+.*/.test(filename)){//中文检测
+        filename="file";
+    }
     // csrftoken
     var csrftoken = getCookie('csrftoken'); // csrf
     $.ajax({
         type: "POST",
         url: '/imapi/imagefile/',
         data: data,
-        contentType:"multipart/form-data", 
+        contentType:"multipart/form-data; charset=utf-8", 
         processData: false, // jQuery不要去处理发送的数据
         contentType: false, // jQuery不要去设置Content-Type请求头
         headers:{"X-CSRFToken": csrftoken, "Content-Disposition":'attachment; filename=' + filename,},
