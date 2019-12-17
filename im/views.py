@@ -1,59 +1,46 @@
 from django.shortcuts import render, redirect
-from .models import UserProfile, UserRelation, Group, GroupUser, UserMessage, GroupMessage
 from django.utils import timezone
 from django.contrib.auth.models import User # 导入 Django 验证系统
-
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm
-
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout, login
+from django.contrib.auth import logout, login, authenticate
+from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.forms import UserCreationForm
 
-from im import signals # 调用记录处理
+from .models import UserProfile, UserRelation, Group, GroupUser, UserMessage, GroupMessage
+
 
 # Create your views here.
 
-def sendmessage(request):
-    """发送消息"""
-    user = request.user
-    sender = request.user.username
-    message = request.POST['groupmessage']
-    print(sender,request.POST,message=='')
-    group,created = Group.objects.get_or_create(name = 'firsttest') # 测试用群
-    gp = GroupMessage.objects.create(group=group, message=message, sender=sender) # 保存群消息
-    group,created = GroupUser.objects.get_or_create(group=group,user=user,groupName='firsttest',userName=sender) # 建立群用户关系
-    return redirect('im:talkRoom')
+# def sendmessage(request):
+#     """发送消息"""
+#     user = request.user
+#     sender = request.user.username
+#     message = request.POST['groupmessage']
+#     # print(sender,request.POST,message=='')
+#     group,created = Group.objects.get_or_create(name = 'firsttest') # 测试用群
+#     gp = GroupMessage.objects.create(group=group, message=message, sender=sender) # 保存群消息
+#     group,created = GroupUser.objects.get_or_create(group=group,user=user,groupName='firsttest',userName=sender) # 建立群用户关系
+#     return redirect('im:talkRoom')
 
 
 @login_required
 def talkRoom(request):
     """返回群消息，用户消息"""
-    # uid = request.user.pk
-    group,created = Group.objects.get_or_create(name='firsttest') # 测试用群
-    # print(type(group),dir(group))
-    # gp = group.groupmessage_set.all()
-    # print(gp)
+    try:
+        Group.objects.get(name='firsttest') # 测试用群
+    except ObjectDoesNotExist:
+        Group.objects.get_or_create(name='firsttest',creator=request.user) # 测试用群
     return render(request, 'im/chatroom2.html', {'gourpmessages': ''}) #
 
 
 def getLogin(request):
     """保存用户登录时间"""
-    user = request.user
-    UserProfile.objects.update_or_create(
-    user = user,
-    defaults={'loginTime': timezone.now()},
-    )
     return redirect('im:talkRoom')
 
 def getLogout(request):
-    """保存用户登出时间"""
-    user = request.user # 获取用户名
+    """重定向至登录页面"""
     logout(request) # 登出
-    UserProfile.objects.update_or_create(
-    user = user,
-    defaults={'logoutTime': timezone.now()},
-    )
     return redirect('im:talkRoom')
 
 #----------signup------------------------------------------------------------

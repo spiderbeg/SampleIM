@@ -24,7 +24,7 @@ function clock() {
         }
         var who = ac[0].getAttribute("id"); //当前聊天用户名 
         if (!ac[0].hasAttribute("maxpk")){// 还没有创建 maxpk 属性
-            var maxid = 0;
+            var maxid = -1;
         }else{
             var maxid = ac[0].getAttribute("maxpk"); // 当前对象最新 pk 值
         }
@@ -54,7 +54,7 @@ function clock() {
             }else{
                 var st2 = sender + '->' + who2;
             }
-            if (maxid === 0 && who === 'first'){//当前用户初次登录 获取所有最近消息
+            if (maxid === -1 && who === 'first'){//当前用户初次登录 获取所有最近消息
                 if (who2==='first'){
                     gethistory(who2,acs[i],data.message_status,style=0);
                 }else{
@@ -63,7 +63,12 @@ function clock() {
                 //添加消息记录操作
                 var user2 =  document.getElementById(who2);
                 //设定最大值 pk; minpk 会在 gethistory 中设置
-                user2.setAttribute("maxpk", tms[st2]);
+                if (tms[st2] != undefined){
+                    user2.setAttribute("maxpk", tms[st2]);
+                }else{//防止用户初次登录时，出现 max = undefined 的情况
+                    user2.setAttribute("maxpk", 0);
+                }
+                
             }else if(addusers.length != 0 && addusers.includes(who2)){// 新用户登录时 
                 console.log('function: clock -> 新用户登录呢',addusers)
                 gethistory(who2,acs[i],data.message_status,style=1);
@@ -71,7 +76,11 @@ function clock() {
                 //添加消息记录操作
                 var user2 =  document.getElementById(who2);
                 //设定最大值 pk; minpk 会在 gethistory 中设置
-                user2.setAttribute("maxpk", tms[st2]);
+                if (tms[st2] != undefined){
+                    user2.setAttribute("maxpk", tms[st2]);
+                }else{//防止用户初次登录时，出现 max = undefined 的情况
+                    user2.setAttribute("maxpk", 0);
+                }
             }else{//非第一次请求，有新信息改变颜色
                 var maxpk2 = acs[i].getAttribute("maxpk"); 
                 var status = acs[i].children[1].children[1].children[0]; // 定位到 span 节点
@@ -93,7 +102,7 @@ function clock() {
             var d=$("#chat");
             d[0].scrollTop = d[0].scrollHeight;
         }
-        if(maxid != tms[st] && maxid != 0){// 2 更新最新消息
+        if(maxid != tms[st] && maxid != -1){// 2 更新最新消息
             //更新最新消息, maxpk 会在 get_newest() 内添加
             get_newest(sender,ac[0]);//滚动到底部在函数内实现
         }else{
@@ -210,7 +219,7 @@ function post_message(url=null,type='T'){
     var ac = $('#username_list>li.activate'); //激活用户
     if(!ac[0].hasAttribute("id")){
         console.log("function：post_message -> 暂无激活用户");
-        return false;
+        return;
     }
     var who = ac[0].getAttribute("id"); // 获取当前选择用户
     // csrftoken
@@ -225,7 +234,7 @@ function post_message(url=null,type='T'){
         var message = url;
     }else{
         console.log('没有反应！？？！？')
-        return
+        return;
     }
     
     console.log(sender, message)
@@ -234,7 +243,7 @@ function post_message(url=null,type='T'){
         var sdata = {'message':message,'sender':sender, 'mtype':type};
     }else{
         var surl = '/imapi/usermessage/';
-        var sdata = {'message':message,'sender':sender,'to':who,'mtype':type};
+        var sdata = {'message':message,'sender':sender,'receiver':who,'mtype':type};
     }
     $.ajax({
         type: "POST",
@@ -298,6 +307,9 @@ function gethistory(who=null,li=null,data=1,style=2){
         var minpk = data[s] + 1;
         console.log('function:gethistory -> 首次获取历史记录，应该在最新记录上加 1',data[s]);
     }
+    if (data[s]===undefined){
+        return;
+    }
     console.log('function:gethistory -> 历史记录传输消息',sender,who,type,minpk);
     //发送请求
     $.getJSON('/imapi/historymessage/', {"user1":sender,"user2":who,"type":type,"minpk":minpk}, function(history){
@@ -344,12 +356,8 @@ function handle_history(history, type, sender,who,li,style){
     chat = $("#main>ul"); //聊天内容
     for(var i=0, len=history.length; i<len; i++){
         var i2 = i;
+        var sendtime = '<h3>'+ history[i2].time.substring(0,19) +'</h3>';
 
-        if (type==='group'){
-            var sendtime = '<h3>'+ history[i2].timeg.substring(0,19) +'</h3>';
-        }else{
-            var sendtime = '<h3>'+ history[i2].timeu.substring(0,19) +'</h3>';
-        }
         
         var senduser = ' <h2>' + history[i2].sender + '</h2>';
         if (history[i2].mtype ==='T'){//文字消息
@@ -449,12 +457,7 @@ function handle_newest(newest,type,sender,who,ac){
     console.log(chat)
     for(var i=0, len=newest.length; i<len; i++){
         var i2 = i;
-        if (type==='group'){
-            var sendtime = '<h3>'+ newest[i2].timeg.substring(0,19) +'</h3>';
-        }else{
-            var sendtime = '<h3>'+ newest[i2].timeu.substring(0,19) +'</h3>';
-        }
-        
+        var sendtime = '<h3>'+ newest[i2].time.substring(0,19) +'</h3>';
         var senduser = ' <h2>' + newest[i2].sender + '</h2>';
         console.log('function:handle_newest -> mtype: ', newest[i2].mtype)
         if (newest[i2].mtype ==='T'){//文字消息

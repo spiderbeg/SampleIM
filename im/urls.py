@@ -9,6 +9,6 @@ urlpatterns = [
     path('signup/', views.signup, name="signup"),
     path('getLogout/', views.getLogout, name="getLogout"),
     path('getLogin/', views.getLogin, name="getLogin"),
-    path('sendmessage/', views.sendmessage, name="sendmessage"),
-    path('test/', views.testform, name='testform'),
+    # path('sendmessage/', views.sendmessage, name="sendmessage"),
+    # path('test/', views.testform, name='testform'),
 ]
