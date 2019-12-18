@@ -38,7 +38,8 @@ LOGIN_REDIRECT_URL = '/im/getLogin/'  # https://docs.djangoproject.com/en/2.2/re
 # Application definition
 
 INSTALLED_APPS = [
-    'im.apps.ImConfig', # 安装 app
+    'im.apps.ImConfig', # 安装 app, 此时需要 im/apps.py ，当直接使用 im 安装应用(如下一行)，则可不需要 im/apps.py
+    # 'im',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
