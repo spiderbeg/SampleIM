@@ -12,18 +12,21 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id','username']
 
+
 class UserMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserMessage
         fields = ['time', 'message', 'sender', 'receiver', 'pk','mtype']
-        
+
+
 class GroupMessageSerializer(serializers.ModelSerializer):
     groupname = serializers.ReadOnlyField(source='group.name') # 多对一 关联； 一对多：snippets = serializers.PrimaryKeyRelatedField(many=True, queryset=Snippet.objects.all())
     # snippets = serializers.HyperlinkedRelatedField(view_name='group-detail', read_only=True)
     class Meta:
         model = GroupMessage
         fields = ['message', 'time', 'sender', 'pk','groupname','mtype']
-        # fields = ['__all__', 'snippets']
+
+
 class SaveImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

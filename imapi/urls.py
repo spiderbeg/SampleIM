@@ -10,7 +10,7 @@ router.register('usermessage', views.UserMessageViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('groupmgpk/', views.groupmgpk),
+    path('groupmgpk/', views.groupmgpk), # 测试接口
     path('historymessage/', views.history_message),
     path('newestmessage/', views.newest_message),
     path('imagefile/', views.imagefile),

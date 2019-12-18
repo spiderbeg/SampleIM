@@ -254,7 +254,7 @@ function post_message(url=null,type='T'){
             console.log(newEnd);
         },
         error: function () {
-            alert("There was an error, please try again!");
+            alert("There was an error, 输入请勿为空!");
         }
     });
     if(url===null){
@@ -275,6 +275,7 @@ function compare2(p){ //这是比较函数
 // 2 请求发送
 function gethistory(who=null,li=null,data=1,style=2){
     // 数据准备
+    console.log('gethistory 函数里面')
     //获取当前用户名
     var sender = document.getElementById("username").innerHTML; // 获取网页内容
     //获取聊天对象
@@ -285,7 +286,8 @@ function gethistory(who=null,li=null,data=1,style=2){
             var who = lis[0].getAttribute("id"); // 获取当前选择用户
             var li = lis[0] //当前选中节点
         }else{
-            return
+            console.log('没获取到数据？')
+            return;
         }
     }
     //激活用户 节点 li
@@ -304,12 +306,13 @@ function gethistory(who=null,li=null,data=1,style=2){
         }else{
             var s = sender + '->' + who;
         }
+        if (data[s]===undefined){
+            return;
+        }
         var minpk = data[s] + 1;
         console.log('function:gethistory -> 首次获取历史记录，应该在最新记录上加 1',data[s]);
     }
-    if (data[s]===undefined){
-        return;
-    }
+    
     console.log('function:gethistory -> 历史记录传输消息',sender,who,type,minpk);
     //发送请求
     $.getJSON('/imapi/historymessage/', {"user1":sender,"user2":who,"type":type,"minpk":minpk}, function(history){
@@ -556,13 +559,19 @@ function post_image(data,filename="file"){
 // 显示 emoji 图像
 function emoji(){
     // 按钮
-    var button = document.getElementById('emojibutton');
-    var text = document.getElementById("inpumessage");
-    if(!text.hasAttribute("style")){
+    var button = document.getElementById('emojibutton');//emoji 按钮
+    var text = document.getElementById("inpumessage"); // 发送信息文本框
+    var messsageb = document.getElementById("messagebutton"); //发送信息按钮
+    var imageb = document.getElementById("select_file"); // 发送图片按钮
+    if(!text.hasAttribute("style")){//信息发送框可见
         text.setAttribute("style","display:none;");
+        messsageb.setAttribute("style","display:none;");
+        imageb.setAttribute("style","display:none;");
         button.innerHTML = 'Return';
-    }else{
+    }else{//信息发送框不可见
         text.removeAttribute("style");
+        messsageb.removeAttribute("style");
+        imageb.removeAttribute("style");
         button.innerHTML = 'Emoji';
     }
     var em = document.getElementById("emoji");
@@ -588,25 +597,5 @@ function related_image() {
     $("#fileinput").click()
 }
 
-// 测试用--django 表单图片传送测试
-function test(){
-    console.log('function: django 表单图片传送测试');
-    //表单
-    var formData = new FormData();
-    var filei = document.getElementById('err2');
-    formData.append("fileInput", filei.files[0]);
-    post_image(formData);
-        
-}
-// //检测页面关闭, 暂时不考虑
-// window.addEventListener("beforeunload", function (e) {
-//     $.getJSON('/imapi/groupmgpk/', {}, function(history){
-//         console.log('are you ok ', history)
-//     })
-//     console.log('llllllllllllllllllllllll');
-//     var confirmationMessage = "\o/";
-//     (e || window.event).returnValue = confirmationMessage; //Gecko + IE
-//     return confirmationMessage;                            //Webkit, Safari, Chrome
-//   });
 
 

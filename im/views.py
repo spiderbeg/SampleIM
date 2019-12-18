@@ -58,15 +58,15 @@ def signup(request):#用户注册
         form = UserCreationForm()
     return render(request, 'im/signup.html', {'form':form})
 
-from im.models import SaveImage
-def testform(request):
-    """测试表单"""
-    print('length', request.META['CONTENT_LENGTH'])
-    bf = request.FILES
-    print(bf)
-    print(111111111,vars(bf))
-    print('django 自带form 使用\n ',bf['fileInput'].file.getvalue())
-    pic = SaveImage.objects.create(user=request.user,image_file=bf['fileInput'])
-    # return Response({'image_path': pic.image_file.url})
-    return redirect('im:talkRoom')
+# from im.models import SaveImage
+# def testform(request):
+#     """测试表单"""
+#     print('length', request.META['CONTENT_LENGTH'])
+#     bf = request.FILES
+#     print(bf)
+#     print(111111111,vars(bf))
+#     print('django 自带form 使用\n ',bf['fileInput'].file.getvalue())
+#     pic = SaveImage.objects.create(user=request.user,image_file=bf['fileInput'])
+#     # return Response({'image_path': pic.image_file.url})
+#     return redirect('im:talkRoom')
 
