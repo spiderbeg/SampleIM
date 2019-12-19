@@ -20,7 +20,7 @@
 ## 接口介绍
 * 这里介绍主要的接口，主要是相关**函数**的作用。
 ![api](introduce/api.png)<br>
-* 接口权限，已 url 形式展示。
+* 接口权限，以 url 形式展示。
 ![api](introduce/apilimit.png)<br>
 ## 运行环境
 * python 3.7
@@ -87,6 +87,9 @@
                 } } }
 3. 激活模型，创建数据库，输入以下命令：
 
+        # 第一步
+        python manage.py makemigrations
+        # 第二步
         python manage.py migrate
 4. 若以上没有问题（为了方便查看后台数据也可先创建超级用户： python manage.py createsuperuser），直接输入以下命令开始运行, 然后在浏览器中输入 <http://127.0.0.1:8000/im>，即可运行：
 
