@@ -2,7 +2,7 @@
 // 心跳包，定时请求数据
 $(function(){
     // 时间间隔 50 ms，谷歌浏览器开两个聊天窗口，ie浏览器开一个聊天窗口，接近 八代 i5 cpu 极限
-    self.setInterval("clock()", 800);//数据请求间隔 
+    self.setInterval("clock()", 1000);//数据请求间隔 
 });
 // 记录当前聊天对象
 localStorage.user = 'a'; 
