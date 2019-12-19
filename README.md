@@ -1,12 +1,16 @@
 # Python 实现简单即时通讯
-* 本项目介绍 Django 利用 Http 短连接轮询实现简单的本地局域网即时通讯。
-## 当前功能状态
-1. 用户登入，默认加入群组且只有一个群组
-2. 显示所有在线用户且任意用户之间可私聊
+* 本项目介绍 **Django** 利用 **http** 短连接轮询实现简单的本地局域网即时通讯。
+## 项目思路
+1. 从多好友，多群组角度考虑模型设计（初版为减少难度考虑，只使用一个群组）；
+2. 由于即时通讯需要大量异步请求，所以需构建后端 api 传输数据，这里使用 Django rest framework；
+3. 然后在前端用 jquery 请求后端 api 构建即时通讯应用。 
+## 当前功能
+1. 用户登入，默认加入群组且只有**一个群组**
+2. 显示所有在线用户且**任意用户**之间可私聊
 3. 用户登录后默认显示与之相关的用户或群组之间的最新10条消息
 4. 文字、图片信息发送
 5. 查看历史消息
-6. 消息提醒，暂以每次登录接收消息为新消息提醒的基准线
+6. 消息提醒，暂以每次**登录接收消息**为新消息提醒的基准线
 ## 模型设计
 * 用户模型使用 Django 自带的模型，模型按照多用户多群组设计（目前阶段部分代码按照一个群组，多用户编写；如获取群组消息时，直接获取群组消息模型中的数据，而未根据群组名进行筛选）。
 
@@ -14,7 +18,7 @@
       GroupMessage.objects.all()
 ![model](introduce/models.png)<br>
 ## 接口介绍
-* 这里介绍主要的接口，主要是相关函数的作用。
+* 这里介绍主要的接口，主要是相关**函数**的作用。
 ![api](introduce/api.png)<br>
 * 接口权限，已 url 形式展示。
 ![api](introduce/apilimit.png)<br>
@@ -51,11 +55,13 @@
 * 应用下 admin.py: 可将模型注册到后台，方便管理。
 * 应用下 models.py: 用于定义模型，也就是数据库结构设计和附加的其他元数据。
 * imapi/permissions.py: 限制部分用户拥有写权限。
+* im/static/im/js/chatroom.js: 前端 js 代码，包含请求后端接口的所有代码。
+* im/templates/im/chatroom2.html, im/static/im/css/chatroom.css: 从网上找的前端界面，地址<http://csshint.com/html-css-chat-box-designs/>,这个页面第12个例子。
 ## 如何使用
-1. 将项目克隆到本地, 选择好放置项目的目录。使用 git 运行以下命令：
+1. 将项目克隆到本地, 选择好放置项目的目录。使用 **git** 运行以下命令：
 
         git clone https://github.com/spiderbeg/SampleIM.git
-2. 本项目使用 mysql 数据库。在本地 mysql 数据库中创建 SampleIm/settings.py 中对应的用户名、密码、数据库，或使用你当前用户名、密码即可，不过需创建与 settings.py 中同名的数据库并配置 settings.py 中对应设置。
+2. 本项目使用 mysql 数据库。在本地 mysql 数据库中创建 SampleIm/settings.py 中对应的用户名、密码、数据库，或使用你当前用户名、密码即可，不过需创建与 settings.py 中同名的数据库并**配置 settings.py 中对应设置**。
 
         # MySQL
         DATABASES = {
@@ -87,9 +93,16 @@
         python manage.py runserver
 ## 一些建议及注意事项
 ### 关于 Django rest framework
-* 本项目使用了 Django rest framework 来构建 api 与前端通信。这里推荐一个中文翻译网站：<https://q1mi.github.io/Django-REST-framework-documentation/>, 如果想好好学习一下 Django rest framework，建议将**教程**中的示例教程亲手做一次。这会对理解会有很大帮助。当然喜欢看英文的链接在这<https://www.django-rest-framework.org/>。
+* 本项目使用了 **Django rest framework** 来构建 api 与前端通信。这里推荐一个中文翻译网站：<https://q1mi.github.io/Django-REST-framework-documentation/>, 如果想好好学习一下 Django rest framework，建议将**教程**中的示例教程亲手做一次。这会对理解会有很大帮助。当然喜欢看英文的链接在这<https://www.django-rest-framework.org/>。
 ### django 判断在线用户
-* 本项目中使用 django cache，记录在线用户，并设置缓存失效时间为3秒，记录人数为20人。详见 SampleIm/middleware.py。
+* 本项目中使用 django **cache**，记录在线用户，并设置缓存失效时间为3秒，记录人数为20人。详见 SampleIm/middleware.py。
+### 消息获取
+* 后端构建 total 接口，包含与请求用户相关的最新消息 id。前端 js 以**固定时间间隔**（本项目设置为 800 ms）请求 total 接口，并将获取的接口数据与前端最新消息 id 数据对比，若有新消息，则前端携带当前 id 请求新消息接口获取最新消息。
+
+            $(function(){
+                self.setInterval("clock()", 800);//数据请求间隔 
+            });
+* 对于图片传送，前端 js 使用 **FormData** 传送图片文件，后端使用 Django **ImageField** 保存图片，并返回图片路径。当返回图片路径后，再将路径，以及消息类型等发送到后端作为信息保存。消息类型是为了方便前端不同类别消息展示，将消息分为图片、文本、视频、emoji。但目前仅支持图片、文本、emoji发送。
 
 
     
