@@ -1,12 +1,9 @@
 from django.core.cache import cache
 from django.conf import settings
-
 from django.contrib.auth.models import User
 
 ONLINE_THRESHOLD = getattr(settings, 'ONLINE_THRESHOLD', 3) # 先从settings 中拿 ONLINE_THRESHOLD 的配置，没有就用这里的配置 3
-ONLINE_MAX = getattr(settings, 'ONLINE_MAX', 50) # 最大在线人数
-# print(11111111111111,dir(settings))
-# print(22222222222222,cache)
+ONLINE_MAX = getattr(settings, 'ONLINE_MAX', 20) # 最大在线人数
 
 def get_online_now(self): 
     return User.objects.filter(id__in=self.online_now_ids or [])

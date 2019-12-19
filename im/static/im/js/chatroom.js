@@ -1,12 +1,15 @@
 
 // 心跳包，定时请求数据
 $(function(){
-    self.setInterval("clock()", 2000);//数据请求间隔
+    // 时间间隔 50 ms，谷歌浏览器开两个聊天窗口，ie浏览器开一个聊天窗口，接近 八代 i5 cpu 极限
+    self.setInterval("clock()", 800);//数据请求间隔 
 });
 // 记录当前聊天对象
 localStorage.user = 'a'; 
 // 请求当前最新消息状态，--主要逻辑
 function clock() {
+    // https://stackoverflow.com/questions/52190419/enable-keep-alive-in-django-for-persistent-connection
+    // django 不支持 http keep alive
     $.getJSON('/imapi/total/', {}, function(data) {
         console.log('function: clock -> -> -> ->新的操作开始。。<- <- <- <- \n -> ->');
         // 从网页获取当前 登录用户名

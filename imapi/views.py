@@ -3,11 +3,9 @@ from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import viewsets
-from rest_framework import permissions
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.decorators import parser_classes
+from rest_framework import status, viewsets, mixins, permissions
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+
 
 from imapi.permissions import IsOwnerOrReadOnly
 from im.models import UserMessage, GroupMessage, UserRelation, Group, GroupUser, UserProfile, SaveImage
@@ -17,9 +15,11 @@ from imapi.serializer import UserMessageSerializer, GroupMessageSerializer, User
 """ ViewSet 简化操作
 """
 
-class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
+class TotalMessageViewSet(mixins.ListModelMixin,
+                          viewsets.GenericViewSet):
     """
-    1 返回用户最新消息
+    0 只需要 list 操作， GET 请求时，返回响应数据, 所以使用 mixins.ListModelMixin  viewsets.GenericViewSet
+    1 返回用户最新消息, 
     2 返回用户列表
     """
     # 添加权限
@@ -57,14 +57,12 @@ class TotalMessageViewSet(viewsets.ReadOnlyModelViewSet):
         # 2.2 获取群组最新消息 PK；注意：此处当作只有一个群组处理
         queryset2 = GroupMessage.objects.all()[::-1][:10]
         if len(queryset2) != 0: dz3["%s->%s"%(request.user.username, queryset2[0].group.name)] = queryset2[0].pk # 群组最新消息
+        # 返回数据综合
         dz = {
             'users': users,
             'message_status': dz3,
         }
         return Response(dz)
-
-    def retrieve(self, *args, **kwargs):
-        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class GroupMessageViewSet(viewsets.ModelViewSet):
@@ -73,9 +71,7 @@ class GroupMessageViewSet(viewsets.ModelViewSet):
     '''
     queryset = GroupMessage.objects.all()
     serializer_class = GroupMessageSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
-                          permissions.IsAuthenticated,
-                          IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly] # 1 登录用户可见，消息发送者可修改
     # 保存数据
     def perform_create(self, serializer):
         group = Group.objects.get(name='firsttest') # 对于外键的处理
@@ -88,9 +84,7 @@ class UserMessageViewSet(viewsets.ModelViewSet):
     """
     queryset = UserMessage.objects.all()
     serializer_class = UserMessageSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
-                          permissions.IsAuthenticated,
-                          IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly] # 1 登录用户可见，消息发送者可修改
     # 保存数据
     def perform_create(self, serializer):
         """
@@ -107,6 +101,9 @@ class UserMessageViewSet(viewsets.ModelViewSet):
         serializer.save(userrelation=ur)
 
     def list(self, request): # 重写方法
+        """
+        处理 get 请求返回的数据
+        """
         ur = UserRelation.objects.filter(Q(user=request.user) | Q(user2=request.user)) # Q 可进行复杂查询
         dz = {}
         for ur2 in ur:
@@ -127,6 +124,7 @@ def groupmgpk(request, format=None): # 函数式的写法
     return Response({'error':'please log in'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, ))
 def history_message(request, format=None): # 函数式的写法
     """
     返回用户群聊接收到的id
@@ -134,6 +132,7 @@ def history_message(request, format=None): # 函数式的写法
     return handle_messgae(request)
 
 @api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, ))
 def newest_message(request, format=None): # 函数式的写法
     """
     返回用户群聊接收到的id
@@ -160,7 +159,7 @@ def handle_messgae(request, format=None):
     2 返回相应的消息
     """
     paralist = ['user1','user2','minpk','type'] if 'minpk' in request.GET else ['user1','user2','maxpk','type']
-    if request.method == 'GET' and request.user.is_authenticated and all(k in request.GET and  request.GET[k] not in ['NaN','undefined','null'] for k in paralist): # all() 所有为真返回真
+    if all(k in request.GET and  request.GET[k] not in ['NaN','undefined','null'] for k in paralist): # all() 所有为真返回真
         user1name, user2name = request.GET['user1'], request.GET['user2']
         usepk = int(request.GET[paralist[2]])
         tp = request.GET['type']
@@ -179,7 +178,7 @@ def handle_messgae(request, format=None):
                 dz2[str(ur2)] = serializer.data 
             hm_serializer = dz2
 
-        else:
+        else:# 群组信息
             if 'minpk' == paralist[2]:
                 queryset2 = GroupMessage.objects.filter(pk__lt=int(usepk))[::-1][:10]
             else:

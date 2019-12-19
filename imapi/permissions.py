@@ -6,7 +6,8 @@ from rest_framework import permissions
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """
-    自定义权限只允许对象的所有者编辑它
+    1 使用于用户信息模型 UserMessage
+    2 功能自定义权限只允许信息的发送者，接收者编辑它
     """
     def has_object_permission(self, request, view, obj):
         # 读取权限允许任何请求
@@ -14,5 +15,5 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         
-        # 只有该snippet的所有者才允许写权限
+        #非安全请求时，只有该 usermessage 实例即信息发送者和接收者才允许写权限
         return obj.sender == request.user.username
