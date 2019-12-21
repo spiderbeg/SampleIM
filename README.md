@@ -26,10 +26,10 @@
 * python 3.7
 * windows/linux
 ## 运行依赖
-* Django >= 2.6
+* Django==3.0.1
 * mysqlclient
-* django rest framework
-* pillow
+* djangorestframework==3.10.3
+* pillow==6.2.1
 ## 文件说明
 ### 以下为详解部分
 * 最外层的 SampleIm 文件夹只是包含你的项目文件，这个目录名与 Django 没有关联，可以任意命名。
