@@ -9,7 +9,10 @@ localStorage.user = 'a';
 // 请求当前最新消息状态，--主要逻辑
 function clock() {
     // https://stackoverflow.com/questions/52190419/enable-keep-alive-in-django-for-persistent-connection
-    // django 不支持 http keep alive
+    // django 不支持 http keep alive，django 3 以下版本原生支持 http 1.1 协议
+    //1  ajax会自动带上同源的cookie，不会带上不同源的cookie
+    //2  通过前端设置withCredentials为true， 后端设置Header的方式来让ajax自动带上不同源的cookie，
+    //   但是这个属性对同源请求没有任何影响， 会被自动忽略。
     $.getJSON('/imapi/total/', {}, function(data) {
         console.log('function: clock -> -> -> ->新的操作开始。。<- <- <- <- \n -> ->');
         // 从网页获取当前 登录用户名

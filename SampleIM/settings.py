@@ -52,7 +52,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+     # https://docs.djangoproject.com/zh-hans/3.0/topics/http/sessions/
+    'django.contrib.sessions.middleware.SessionMiddleware', # 清除会话存储
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

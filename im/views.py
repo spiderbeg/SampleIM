@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.contrib.auth.models import User # 导入 Django 验证系统
-from django.utils import timezone
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, login, authenticate
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.forms import UserCreationForm
+
 
 from .models import UserProfile, UserRelation, Group, GroupUser, UserMessage, GroupMessage
 
