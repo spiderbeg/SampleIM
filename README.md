@@ -1,5 +1,6 @@
 # Python 实现简单即时通讯
 * 本项目介绍 **Django** 和 **http** 短连接轮询实现简单的本地局域网即时通讯。
+* 更多实用而有趣的分析案例请关注：**Crossin的编程教室**
 ## 项目思路
 ### 架构设计
 * 理解程序的大体流程
@@ -10,7 +11,7 @@
 3. 考虑用户聊天的整个流程, 包括获取用户最新消息，获取历史消息，发送聊天信息，上传图片文件四大类，并依据具体操作细分构建后端接口。
 4. 在前端用 jquery 控制用户的聊天界面以及请求后端 api 构建即时通讯应用。 
 ### 问题思路
-#### django 判断在线用户
+#### Django 判断在线用户
 * 本项目中使用 django **cache**，是直接使用底层缓存的 API。用来记录在线用户，相关设置为缓存失效时间为3秒，记录最大在线人数为20人。详见 SampleIm/middleware.py。不太熟悉的可以看看 Django 官方文档对于底层缓存 API 的介绍与操作<https://docs.djangoproject.com/zh-hans/3.0/topics/cache/#basic-usage>。
 
             # get_many() 接口，返回一个字典，其中包含你请求的键，这些键真实存在缓存中（并且没过期）
@@ -153,6 +154,9 @@
 * 本项目使用了 **Django rest framework** 来构建 api 与前端通信。这里推荐一个中文翻译网站：<https://q1mi.github.io/Django-REST-framework-documentation/>, 如果想好好学习一下 Django rest framework，建议将**教程**中的示例教程亲手做一次。这会对理解会有很大帮助。当然喜欢看英文的链接在这<https://www.django-rest-framework.org/>。
 ### 接口文档
 * 提醒一下，详细的接口文档<https://shimo.im/docs/CGpqWJgjhPwhKr6G>。
+## Crossin的编程教室
+* 更多实用而有趣的分析案例请关注：**Crossin的编程教室**<br>
+<img src="Crossin的编程教室.jpg" alt="Crossin的编程教室.jpg" height="200" width="200">   
 
 
 
