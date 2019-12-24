@@ -73,7 +73,7 @@
       GroupMessage.objects.all()
 ![model](introduce/models.png)<br>
 ## 接口介绍
-* 这里介绍主要的接口，主要是相关**函数**的作用。
+* 这里介绍主要的接口，主要是相关**函数**的作用。接口文档<https://shimo.im/docs/CGpqWJgjhPwhKr6G>。
 ![api](introduce/api.png)<br>
 ## 运行环境
 * python 3.7
@@ -150,6 +150,8 @@
 ## 一些建议及注意事项
 ### 关于 Django rest framework
 * 本项目使用了 **Django rest framework** 来构建 api 与前端通信。这里推荐一个中文翻译网站：<https://q1mi.github.io/Django-REST-framework-documentation/>, 如果想好好学习一下 Django rest framework，建议将**教程**中的示例教程亲手做一次。这会对理解会有很大帮助。当然喜欢看英文的链接在这<https://www.django-rest-framework.org/>。
+### 接口文档
+* 提醒一下，详细的接口文档<https://shimo.im/docs/CGpqWJgjhPwhKr6G>。
 
 
 
